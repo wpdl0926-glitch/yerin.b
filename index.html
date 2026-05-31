@@ -67,7 +67,6 @@
             width: 16%;
             height: 7%;
             z-index: 1000;
-            /* background-color: rgba(255, 0, 0, 0.3); */
         }
 
         /* 로딩 화면 */
@@ -154,7 +153,6 @@
             z-index: 20;
             cursor: pointer;
             will-change: transform, left, top;
-            /* 애니메이션을 브라우저(CSS)가 처리하도록 수정하여 프레임 드랍(버벅임) 해결 */
             transition: left 0.8s cubic-bezier(0.2, 0.8, 0.2, 1), 
                         top 0.8s cubic-bezier(0.2, 0.8, 0.2, 1), 
                         width 0.6s cubic-bezier(0.4, 0, 0.2, 1), 
@@ -711,10 +709,7 @@
         const ICON_HOVER_RADIUS = 150;
         const ICON_MAX_SCALE_BOOST = 1;
         const ICON_SCALE_SETTLE_RATE = 0.2;
-        
-        // 프레임 드랍(버벅임) 해결을 위해 JS 위치 계산 개입을 최소화 (0.09 -> 1로 변경)
         const ICON_POSITION_SETTLE_RATE = 1; 
-        
         const CAMERA_MAX_WIDTH = 800;
         const CAMERA_SIDE_GAP = 28;
         const CAMERA_LAYOUT_DELAY_MS = 400;
@@ -727,26 +722,22 @@
             const popupCloseBtn = byId('popup-close-btn');
             const popupBodyLink = byId('popup-body-link');
 
-            // 1. 이전 페이지 URL에 'about.html'이 포함되어 있는지 확인하는 조건 추가
-            const isFromAbout = document.referrer.includes('about.html');
+            const urlParams = new URLSearchParams(window.location.search);
+            const isFromAbout = urlParams.get('from') === 'about';
 
             if (aboutPopup) {
                 if (isFromAbout) {
-                    // about에서 돌아온 경우 편지 팝업을 보여주지 않음
                     aboutPopup.classList.remove('show');
+                    aboutPopup.style.display = 'none'; // 눈에 보이지 않도록 완전히 가림
                 } else {
-                    // 그 외의 경우(처음 접속 등)에만 팝업을 띄움
                     aboutPopup.classList.add('show');
                 }
             }
 
             if (loadingScreen) {
                 if (isFromAbout) {
-                    // 2. about에서 돌아온 경우 로딩 화면을 애니메이션 없이 즉시 숨김
-                    loadingScreen.style.opacity = '0';
-                    loadingScreen.style.visibility = 'hidden';
+                    loadingScreen.style.display = 'none';
                 } else {
-                    // 처음 들어왔을 때는 기존 설정대로 3초(LOADING_DURATION_MS) 동안 로딩
                     setTimeout(() => {
                         loadingScreen.style.opacity = '0';
                         loadingScreen.style.visibility = 'hidden';
@@ -757,10 +748,8 @@
             if (popupCloseBtn && popupContent && aboutPopup) {
                 popupCloseBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
-                    
                     document.dispatchEvent(new CustomEvent('aboutPopupClosed'));
                     popupContent.classList.add('folding');
-                    
                     setTimeout(() => {
                         aboutPopup.classList.remove('show');
                     }, POPUP_FOLD_MS);
@@ -772,12 +761,16 @@
                     window.location.href = 'about.html';
                 });
             }
-        }); // 중복 오류 수정 완료
+        });
 
         document.addEventListener('DOMContentLoaded', () => {
             let isPhotoBoothOpen = false;
             let isDetailOpen = false;
-            let isAboutPopupOpen = Boolean(byId('about-popup'));
+            
+            // 핵심 수정 포인트: about 페이지에서 왔으면 팝업 상태를 처음부터 '닫힘(false)'으로 초기화합니다.
+            const initUrlParams = new URLSearchParams(window.location.search);
+            const initIsFromAbout = initUrlParams.get('from') === 'about';
+            let isAboutPopupOpen = Boolean(byId('about-popup')) && !initIsFromAbout;
 
             const iconOverlay = byId('icon-overlay');
             const detailContainer = byId('detail-container');
@@ -789,16 +782,12 @@
                 return `sticker${numStr}.png?v=${stickerAssetVersion}`;
             }
 
-            // 수정된 부분: 확장자를 .mp3로 변경
             function bgMusicUrl(numStr) {
                 return `bgm_${numStr}.mp3?v=${stickerAssetVersion}`;
             }
 
             function playBgMusic(numStr) {
-                if (!bgMusic) {
-                    return;
-                }
-
+                if (!bgMusic) return;
                 bgMusic.src = bgMusicUrl(numStr);
                 bgMusic.currentTime = 0;
                 bgMusic.play().catch(err => console.log('Detail music play blocked:', err));
@@ -840,7 +829,6 @@
                 isDetailOpen = false;
                 setDetailOpacity('0');
                 detailContainer.classList.remove('is-flipped');
-                
                 stopBgMusic();
                 
                 setTimeout(() => {
@@ -876,7 +864,6 @@
                 }
             }
 
-            // 카테고리별 배치 데이터
             const layouts = {
                 main: [
                   { "left": "21.63", "top": "12.42", "size": 79 }, { "left": "28.19", "top": "12.98", "size": 79 },
@@ -987,16 +974,12 @@
 
             function applyLayout(category) {
                 const targetLayout = resolveLayout(category);
-
-                if (!targetLayout) {
-                    return;
-                }
+                if (!targetLayout) return;
 
                 iconElementsData.forEach((data, index) => {
                     if (targetLayout[index]) {
                         data.originLeft = parseFloat(targetLayout[index].left);
                         data.originTop = parseFloat(targetLayout[index].top);
-
                         const newSize = targetLayout[index].size * ICON_SCALE;
                         data.element.style.width = `${newSize}px`;
                         data.element.style.height = `${newSize}px`;
@@ -1011,7 +994,6 @@
                     const numStr = (i + 1).toString().padStart(2, '0');
                     const oLeft = parseFloat(currentLayout[i].left);
                     const oTop = parseFloat(currentLayout[i].top);
-                    
                     const oSize = currentLayout[i].size * ICON_SCALE;
 
                     const iconWrapper = document.createElement('div');
@@ -1020,7 +1002,6 @@
                     iconWrapper.setAttribute('aria-label', `sticker${numStr}`);
                     iconWrapper.style.width = `${oSize}px`;
                     iconWrapper.style.height = `${oSize}px`;
-
                     iconWrapper.style.left = `${ICON_CENTER_LEFT}%`;
                     iconWrapper.style.top = `${ICON_CENTER_TOP}%`;
                     iconWrapper.style.transform = `translate3d(-50%, -50%, 0) scale(1)`;
@@ -1058,10 +1039,7 @@
 
                     iconWrapper.addEventListener('click', (e) => {
                         e.stopPropagation();
-
-                        if (!isDetailOpen) {
-                            openDetailView(numStr);
-                        }
+                        if (!isDetailOpen) openDetailView(numStr);
                     });
                 }
 
@@ -1070,7 +1048,6 @@
                     item.addEventListener('click', (e) => {
                         menuItems.forEach(el => el.classList.remove('active'));
                         e.target.classList.add('active');
-
                         const selectedCategory = e.target.getAttribute('data-category');
                         applyLayout(selectedCategory);
                     });
@@ -1340,10 +1317,7 @@
             };
 
             function removeActiveSticker({ showEmptyMessage = false } = {}) {
-                if (!fabricCanvas) {
-                    return;
-                }
-
+                if (!fabricCanvas) return;
                 const activeObject = fabricCanvas.getActiveObject();
                 if (activeObject) {
                     fabricCanvas.remove(activeObject);
@@ -1391,14 +1365,12 @@
                 if (!fabricCanvas) return;
                 fabricCanvas.discardActiveObject();
                 fabricCanvas.renderAll();
-
                 showCaptureFlash();
 
                 try {
                     const ctx = tempCanvas.getContext('2d');
                     tempCanvas.width = fabricCanvas.width;
                     tempCanvas.height = fabricCanvas.height;
-
                     ctx.save();
                     ctx.translate(tempCanvas.width, 0);
                     ctx.scale(-1, 1);
@@ -1407,7 +1379,6 @@
 
                     const fabricEl = fabricCanvas.lowerCanvasEl || fabricCanvas.getElement();
                     ctx.drawImage(fabricEl, 0, 0, tempCanvas.width, tempCanvas.height);
-
                     downloadImage(tempCanvas.toDataURL('image/png'), 'YerinB_Photo.png');
                 } catch (e) {
                     console.error('저장 에러:', e);
