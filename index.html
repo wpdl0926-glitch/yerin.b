@@ -59,15 +59,25 @@
         }
         /* ------------------------------------------- */
 
-        /* 투명한 클릭 영역 역할 (yerin.b) */
         .site-brand {
             position: absolute;
-            top: 6%;
-            right: 4%;
-            width: 16%;
-            height: 7%;
+            top: calc(10% - 20px);
+            right: calc(5% - 20px);
             z-index: 1000;
-            /* background-color: rgba(255, 0, 0, 0.3); */
+            padding: 0;
+            border: 0;
+            background: transparent;
+            color: #000000;
+            font-family: 'Helvetica', sans-serif;
+            font-size: 10pt;
+            font-weight: 400;
+            letter-spacing: -0.02em;
+            text-transform: lowercase;
+            transition: color 0.3s ease;
+        }
+
+        .site-brand:hover {
+            color: #FF969D;
         }
 
         /* 로딩 화면 */
@@ -77,7 +87,8 @@
             background-color: #ffffff;
             z-index: 9999;
             opacity: 1;
-            transition: opacity 1.2s ease-in-out;
+            visibility: visible;
+            transition: opacity 1.2s ease-in-out, visibility 1.2s ease-in-out;
             pointer-events: none;
             overflow: hidden;
         }
@@ -154,11 +165,7 @@
             z-index: 20;
             cursor: pointer;
             will-change: transform, left, top;
-            /* 애니메이션을 브라우저(CSS)가 처리하도록 수정하여 프레임 드랍(버벅임) 해결 */
-            transition: left 0.8s cubic-bezier(0.2, 0.8, 0.2, 1), 
-                        top 0.8s cubic-bezier(0.2, 0.8, 0.2, 1), 
-                        width 0.6s cubic-bezier(0.4, 0, 0.2, 1), 
-                        height 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1), height 0.6s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .icon-inner {
@@ -647,7 +654,7 @@
         <div class="category-item" data-category="feature">FEATURE</div>
     </nav>
 
-    <div class="site-brand" id="site-brand" title="메인 배치로 돌아가기"></div>
+    <button class="site-brand" id="site-brand" type="button" aria-label="메인 배치로 돌아가기">yerin.b</button>
 
     <div id="icon-overlay"></div>
     
@@ -711,10 +718,7 @@
         const ICON_HOVER_RADIUS = 150;
         const ICON_MAX_SCALE_BOOST = 1;
         const ICON_SCALE_SETTLE_RATE = 0.2;
-        
-        // 프레임 드랍(버벅임) 해결을 위해 JS 위치 계산 개입을 최소화 (0.09 -> 1로 변경)
-        const ICON_POSITION_SETTLE_RATE = 1; 
-        
+        const ICON_POSITION_SETTLE_RATE = 0.09;
         const CAMERA_MAX_WIDTH = 800;
         const CAMERA_SIDE_GAP = 28;
         const CAMERA_LAYOUT_DELAY_MS = 400;
@@ -727,26 +731,29 @@
             const popupCloseBtn = byId('popup-close-btn');
             const popupBodyLink = byId('popup-body-link');
 
-            // 1. 이전 페이지 URL에 'about.html'이 포함되어 있는지 확인하는 조건 추가
-            const isFromAbout = document.referrer.includes('about.html');
+            // URL 주소창에서 ?from=about 파라미터가 있는지 확인 (로컬 환경에서도 100% 작동)
+            const urlParams = new URLSearchParams(window.location.search);
+            const isFromAbout = urlParams.get('from') === 'about';
 
             if (aboutPopup) {
                 if (isFromAbout) {
-                    // about에서 돌아온 경우 편지 팝업을 보여주지 않음
+                    // about에서 돌아온 경우 편지 팝업 미노출
                     aboutPopup.classList.remove('show');
+                    aboutPopup.style.display = 'none';
+                    // 편지 팝업이 닫힌 것으로 상태를 강제 업데이트
+                    document.dispatchEvent(new CustomEvent('aboutPopupClosed'));
                 } else {
-                    // 그 외의 경우(처음 접속 등)에만 팝업을 띄움
+                    // 일반 접속 시 팝업 노출
                     aboutPopup.classList.add('show');
                 }
             }
 
             if (loadingScreen) {
                 if (isFromAbout) {
-                    // 2. about에서 돌아온 경우 로딩 화면을 애니메이션 없이 즉시 숨김
-                    loadingScreen.style.opacity = '0';
-                    loadingScreen.style.visibility = 'hidden';
+                    // about에서 돌아온 경우 로딩 화면을 즉시 완전히 제거하여 무한 로딩 차단
+                    loadingScreen.style.display = 'none';
                 } else {
-                    // 처음 들어왔을 때는 기존 설정대로 3초(LOADING_DURATION_MS) 동안 로딩
+                    // 처음 들어왔을 때는 기존대로 3초 뒤 페이드아웃
                     setTimeout(() => {
                         loadingScreen.style.opacity = '0';
                         loadingScreen.style.visibility = 'hidden';
@@ -774,17 +781,15 @@
             }
         });
 
-            if (popupBodyLink) {
-                popupBodyLink.addEventListener('click', () => {
-                    window.location.href = 'about.html';
-                });
-            }
-        });
-
         document.addEventListener('DOMContentLoaded', () => {
             let isPhotoBoothOpen = false;
             let isDetailOpen = false;
-            let isAboutPopupOpen = Boolean(byId('about-popup'));
+            
+            const initialUrlParams = new URLSearchParams(window.location.search);
+            const initialIsFromAbout = initialUrlParams.get('from') === 'about';
+            
+            // about에서 왔으면 팝업은 닫힌 상태로 시작 (아이콘 즉시 퍼짐)
+            let isAboutPopupOpen = Boolean(byId('about-popup')) && !initialIsFromAbout;
 
             const iconOverlay = byId('icon-overlay');
             const detailContainer = byId('detail-container');
@@ -796,9 +801,8 @@
                 return `sticker${numStr}.png?v=${stickerAssetVersion}`;
             }
 
-            // 수정된 부분: 확장자를 .mp3로 변경
             function bgMusicUrl(numStr) {
-                return `bgm_${numStr}.mp3?v=${stickerAssetVersion}`;
+                return `bgm_${numStr}.m4a?v=${stickerAssetVersion}`;
             }
 
             function playBgMusic(numStr) {
@@ -951,6 +955,7 @@
                   { "left": "59.16", "top": "66.68", "size": 68 }, { "left": "63.60", "top": "80.71", "size": 68 },
                   { "left": "68.18", "top": "32.02", "size": 68 }, { "left": "73.12", "top": "66.68", "size": 68 }
                 ],
+                // 새로 요청해주신 좌표로 교체 완료된 feature 카테고리
                 feature: [
                   { "left": "77.59", "top": "53.12", "size": 68 }, { "left": "54.40", "top": "53.12", "size": 68 },
                   { "left": "43.58", "top": "85.84", "size": 68 }, { "left": "69.45", "top": "53.12", "size": 68 },
@@ -1332,8 +1337,8 @@
                     top: fabricCanvas.height / 2,
                     originX: 'center',
                     originY: 'center',
-                    scaleX: 0.25,
-                    scaleY: 0.25,
+                    scaleX: 0.5,
+                    scaleY: 0.5,
                     transparentCorners: false,
                     cornerColor: '#111',
                     cornerStrokeColor: '#fff',
