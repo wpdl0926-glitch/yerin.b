@@ -727,18 +727,31 @@
             const popupCloseBtn = byId('popup-close-btn');
             const popupBodyLink = byId('popup-body-link');
 
+            // 1. 이전 페이지 URL에 'about.html'이 포함되어 있는지 확인하는 조건 추가
+            const isFromAbout = document.referrer.includes('about.html');
+
             if (aboutPopup) {
-                aboutPopup.classList.add('show');
+                if (isFromAbout) {
+                    // about에서 돌아온 경우 편지 팝업을 보여주지 않음
+                    aboutPopup.classList.remove('show');
+                } else {
+                    // 그 외의 경우(처음 접속 등)에만 팝업을 띄움
+                    aboutPopup.classList.add('show');
+                }
             }
 
-            // 숨겨져 있던 로딩 화면을 HTML 뼈대(DOM)에서 아예 삭제하여 메모리를 확보합니다.
             if (loadingScreen) {
-                setTimeout(() => {
+                if (isFromAbout) {
+                    // 2. about에서 돌아온 경우 로딩 화면을 애니메이션 없이 즉시 숨김
                     loadingScreen.style.opacity = '0';
+                    loadingScreen.style.visibility = 'hidden';
+                } else {
+                    // 처음 들어왔을 때는 기존 설정대로 3초(LOADING_DURATION_MS) 동안 로딩
                     setTimeout(() => {
-                        loadingScreen.remove();
-                    }, 1200);
-                }, LOADING_DURATION_MS);
+                        loadingScreen.style.opacity = '0';
+                        loadingScreen.style.visibility = 'hidden';
+                    }, LOADING_DURATION_MS);
+                }
             }
 
             if (popupCloseBtn && popupContent && aboutPopup) {
@@ -753,6 +766,13 @@
                     }, POPUP_FOLD_MS);
                 });
             }
+
+            if (popupBodyLink) {
+                popupBodyLink.addEventListener('click', () => {
+                    window.location.href = 'about.html';
+                });
+            }
+        });
 
             if (popupBodyLink) {
                 popupBodyLink.addEventListener('click', () => {
