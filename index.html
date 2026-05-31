@@ -59,15 +59,14 @@
         }
         /* ------------------------------------------- */
 
-        /* 수정된 site-brand 부분: 투명한 클릭 영역 역할만 함 */
+        /* 투명한 클릭 영역 역할 (yerin.b) */
         .site-brand {
             position: absolute;
             top: calc(10% - 20px);
             right: calc(5% - 20px);
-            width: 70px; /* 클릭 영역 가로 길이 */
-            height: 30px; /* 클릭 영역 세로 길이 */
+            width: 70px;
+            height: 30px;
             z-index: 1000;
-            /* 배경 이미지 글씨와 위치가 안 맞으면 아래 주석을 풀고 색깔을 보면서 top, right, width, height를 조절하세요 */
             /* background-color: rgba(255, 0, 0, 0.3); */
         }
 
@@ -78,8 +77,7 @@
             background-color: #ffffff;
             z-index: 9999;
             opacity: 1;
-            visibility: visible;
-            transition: opacity 1.2s ease-in-out, visibility 1.2s ease-in-out;
+            transition: opacity 1.2s ease-in-out;
             pointer-events: none;
             overflow: hidden;
         }
@@ -156,7 +154,11 @@
             z-index: 20;
             cursor: pointer;
             will-change: transform, left, top;
-            transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1), height 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            /* 애니메이션을 브라우저(CSS)가 처리하도록 수정하여 프레임 드랍(버벅임) 해결 */
+            transition: left 0.8s cubic-bezier(0.2, 0.8, 0.2, 1), 
+                        top 0.8s cubic-bezier(0.2, 0.8, 0.2, 1), 
+                        width 0.6s cubic-bezier(0.4, 0, 0.2, 1), 
+                        height 0.6s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .icon-inner {
@@ -709,7 +711,10 @@
         const ICON_HOVER_RADIUS = 150;
         const ICON_MAX_SCALE_BOOST = 1;
         const ICON_SCALE_SETTLE_RATE = 0.2;
-        const ICON_POSITION_SETTLE_RATE = 0.09;
+        
+        // 프레임 드랍(버벅임) 해결을 위해 JS 위치 계산 개입을 최소화 (0.09 -> 1로 변경)
+        const ICON_POSITION_SETTLE_RATE = 1; 
+        
         const CAMERA_MAX_WIDTH = 800;
         const CAMERA_SIDE_GAP = 28;
         const CAMERA_LAYOUT_DELAY_MS = 400;
@@ -726,10 +731,13 @@
                 aboutPopup.classList.add('show');
             }
 
+            // 숨겨져 있던 로딩 화면을 HTML 뼈대(DOM)에서 아예 삭제하여 메모리를 확보합니다.
             if (loadingScreen) {
                 setTimeout(() => {
                     loadingScreen.style.opacity = '0';
-                    loadingScreen.style.visibility = 'hidden';
+                    setTimeout(() => {
+                        loadingScreen.remove();
+                    }, 1200);
                 }, LOADING_DURATION_MS);
             }
 
@@ -922,7 +930,6 @@
                   { "left": "59.16", "top": "66.68", "size": 68 }, { "left": "63.60", "top": "80.71", "size": 68 },
                   { "left": "68.18", "top": "32.02", "size": 68 }, { "left": "73.12", "top": "66.68", "size": 68 }
                 ],
-                // 새로 요청해주신 좌표로 교체 완료된 feature 카테고리
                 feature: [
                   { "left": "77.59", "top": "53.12", "size": 68 }, { "left": "54.40", "top": "53.12", "size": 68 },
                   { "left": "43.58", "top": "85.84", "size": 68 }, { "left": "69.45", "top": "53.12", "size": 68 },
