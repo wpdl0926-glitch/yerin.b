@@ -776,8 +776,9 @@
                 return `sticker${numStr}.png?v=${stickerAssetVersion}`;
             }
 
+            // 수정된 부분: 확장자를 .mp3로 변경
             function bgMusicUrl(numStr) {
-                return `bgm_${numStr}.m4a?v=${stickerAssetVersion}`;
+                return `bgm_${numStr}.mp3?v=${stickerAssetVersion}`;
             }
 
             function playBgMusic(numStr) {
