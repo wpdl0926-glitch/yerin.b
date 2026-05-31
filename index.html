@@ -59,26 +59,15 @@
         }
         /* ------------------------------------------- */
 
-        .site-brand {
-            position: absolute;
-            top: calc(10% - 20px);
-            right: calc(5% - 20px);
-            z-index: 1000;
-            padding: 0;
-            border: 0;
-            background: transparent;
-            color: #000000;
-            font-family: 'Helvetica', sans-serif;
-            font-size: 10pt;
-            font-weight: 400;
-            letter-spacing: -0.02em;
-            text-transform: lowercase;
-            transition: color 0.3s ease;
-        }
-
-        .site-brand:hover {
-            color: #FF969D;
-        }
+       .site-brand {
+    position: absolute;
+    /* 배경 이미지 텍스트 위치에 맞게 top, right 수치를 자유롭게 조절하세요 */
+    top: calc(10% - 20px); 
+    right: calc(5% - 20px);
+    
+    width: 70px; 
+    height: 30px;
+    z-index: 1000;
 
         /* 로딩 화면 */
         #loading-screen {
@@ -654,7 +643,7 @@
         <div class="category-item" data-category="feature">FEATURE</div>
     </nav>
 
-    <button class="site-brand" id="site-brand" type="button" aria-label="메인 배치로 돌아가기">yerin.b</button>
+<div class="site-brand" id="site-brand" title="메인 배치로 돌아가기"></div>
 
     <div id="icon-overlay"></div>
     
