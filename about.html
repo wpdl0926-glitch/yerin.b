@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About - YERIN.B</title>
+    
+    <!-- Pretendard 폰트 불러오기 -->
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+    
+    <style>
+        /* 기본 여백 제거 및 화면 전체 기준 설정 */
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* index.html과 동일한 날개 모양 커서 적용 */
+        html, body, body * {
+            cursor: url('cursor-wing.png') 12 7, auto !important;
+        }
+
+        body {
+            /* 배경 이미지 화면 전체 채우기 및 스크롤 시 고정 */
+            background-image: url('background_1.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            
+            /* Pretendard Medium(500) 서체 적용 */
+            font-family: 'Pretendard', sans-serif;
+            font-weight: 500;
+            color: #000000;
+        }
+
+        /* 전체 콘텐츠를 감싸는 영역 */
+        .content-wrapper {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh; /* 화면 최소 높이를 100%로 설정 */
+            padding: 50px 20px;
+            box-sizing: border-box;
+        }
+
+        /* 텍스트가 들어갈 빈 공간 */
+        .text-content {
+            flex-grow: 1; /* 하단 링크를 밀어내고 남은 공간을 모두 차지함 */
+            max-width: 1000px;
+            margin: 0 auto; /* 가운데 정렬 */
+            width: 100%;
+            /* 텍스트 가독성을 위해 필요하다면 아래 주석을 풀고 배경을 설정할 수 있습니다 */
+            /* background-color: rgba(255, 255, 255, 0.5); */
+            /* padding: 40px; */
+            /* border-radius: 10px; */
+        }
+
+        /* 하단 back to home 링크 영역 */
+        .bottom-link {
+            text-align: center;
+            padding-top: 60px;
+            padding-bottom: 20px;
+        }
+
+        .bottom-link a {
+            font-family: 'Pretendard', sans-serif;
+            font-weight: 500;
+            color: #000000;
+            text-decoration: none;
+            font-size: 1.1rem;
+            text-transform: lowercase;
+            transition: color 0.3s ease;
+        }
+
+        .bottom-link a:hover {
+            color: #FF969D; /* 마우스 오버 시 포인트 컬러 적용 */
+        }
+    </style>
+</head>
+<body>
+
+    <div class="content-wrapper">
+        <!-- 이곳에 원하시는 텍스트 내용들을 자유롭게 작성하시면 됩니다. -->
+        <div class="text-content">
+            
+            <!-- 예시: 
+            <p>여기에 텍스트를 입력하세요.</p> 
+            -->
+
+        </div>
+        
+        <!-- 가장 하단 메인 화면으로 돌아가는 링크 -->
+        <div class="bottom-link">
+            <a href="index.html">back to home</a>
+        </div>
+    </div>
+
+</body>
+</html>
