@@ -715,6 +715,24 @@
         const CAMERA_LAYOUT_DELAY_MS = 400;
         const stickerAssetVersion = '1779921709408';
 
+        // 1. 이벤트 리스너를 기다리지 않고 스크립트 파싱 즉시 가려버림 (깜빡임 완벽 차단)
+        const initUrlParams = new URLSearchParams(window.location.search);
+        const isFromAbout = initUrlParams.get('from') === 'about';
+        
+        if (isFromAbout) {
+            const tempLoadingScreen = byId('loading-screen');
+            const tempAboutPopup = byId('about-popup');
+            
+            if (tempLoadingScreen) {
+                tempLoadingScreen.style.display = 'none'; // DOM 생성 직후 즉시 날려버림
+            }
+            if (tempAboutPopup) {
+                tempAboutPopup.style.display = 'none';
+                tempAboutPopup.classList.remove('show');
+            }
+        }
+
+        // 이후의 일반적인 로드 이벤트
         window.addEventListener('load', () => {
             const loadingScreen = byId('loading-screen');
             const aboutPopup = byId('about-popup');
@@ -722,22 +740,12 @@
             const popupCloseBtn = byId('popup-close-btn');
             const popupBodyLink = byId('popup-body-link');
 
-            const urlParams = new URLSearchParams(window.location.search);
-            const isFromAbout = urlParams.get('from') === 'about';
-
-            if (aboutPopup) {
-                if (isFromAbout) {
-                    aboutPopup.classList.remove('show');
-                    aboutPopup.style.display = 'none'; // 눈에 보이지 않도록 완전히 가림
-                } else {
+            // 처음 접속했을 때만 작동 (about에서 안 왔을 때)
+            if (!isFromAbout) {
+                if (aboutPopup) {
                     aboutPopup.classList.add('show');
                 }
-            }
-
-            if (loadingScreen) {
-                if (isFromAbout) {
-                    loadingScreen.style.display = 'none';
-                } else {
+                if (loadingScreen) {
                     setTimeout(() => {
                         loadingScreen.style.opacity = '0';
                         loadingScreen.style.visibility = 'hidden';
@@ -767,10 +775,8 @@
             let isPhotoBoothOpen = false;
             let isDetailOpen = false;
             
-            // 핵심 수정 포인트: about 페이지에서 왔으면 팝업 상태를 처음부터 '닫힘(false)'으로 초기화합니다.
-            const initUrlParams = new URLSearchParams(window.location.search);
-            const initIsFromAbout = initUrlParams.get('from') === 'about';
-            let isAboutPopupOpen = Boolean(byId('about-popup')) && !initIsFromAbout;
+            // 팝업 상태를 isFromAbout에 따라 올바르게 설정
+            let isAboutPopupOpen = Boolean(byId('about-popup')) && !isFromAbout;
 
             const iconOverlay = byId('icon-overlay');
             const detailContainer = byId('detail-container');
