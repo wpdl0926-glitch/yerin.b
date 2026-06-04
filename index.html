@@ -1,0 +1,2785 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YERIN.B</title>
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Arial Black', 'Helvetica', sans-serif;
+            background-color: #ffffff;
+            background-image: url('background_1.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: url('background_2.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s ease;
+            z-index: 0;
+        }
+
+        body.logo-hover::before {
+            opacity: 1;
+        }
+
+        body:has(.site-brand:hover)::before {
+            opacity: 1;
+        }
+
+        /* -------------------------------------------
+           카테고리 메뉴 CSS
+           ------------------------------------------- */
+        .category-menu {
+            position: absolute;
+            top: calc(10% - 20px);
+            left: calc(5% - 20px); 
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .category-item {
+            font-family: 'Helvetica', sans-serif;
+            font-weight: 400; /* Regular */
+            font-size: 10pt; 
+            letter-spacing: -0.02em; /* -2% */
+            color: #000000; /* 기본 검은색 */
+            cursor: pointer;
+            transition: color 0.3s ease;
+            text-transform: uppercase;
+        }
+
+        .category-item:hover {
+            color: #000000;
+        }
+
+        /* 클릭 시(활성화 시) 적용될 색상 */
+        .category-item.active {
+            color: #FF969D;
+        }
+
+        .search-panel {
+            display: flex;
+            align-items: center;
+            width: 150px;
+            max-height: 0;
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-6px);
+            transition: max-height 0.3s ease, opacity 0.3s ease, transform 0.3s ease;
+            overflow: hidden;
+        }
+
+        .search-panel.open {
+            max-height: 34px;
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+        }
+
+        .search-input {
+            width: 100%;
+            border: none;
+            border-bottom: 1px solid #000000;
+            background: transparent;
+            padding: 4px 0;
+            font-family: 'Helvetica', sans-serif;
+            font-size: 10pt;
+            color: #000000;
+            outline: none;
+            text-transform: lowercase;
+        }
+
+        .search-input::placeholder {
+            color: rgba(0, 0, 0, 0.35);
+        }
+        /* ------------------------------------------- */
+
+        /* 투명한 클릭 영역 역할 (yerin.b) */
+        .site-brand {
+            position: absolute;
+            top: 6%;
+            right: 4%;
+            width: 16%;
+            height: 7%;
+            z-index: 1000;
+        }
+
+        /* 로딩 화면 */
+        #loading-screen {
+            position: fixed;
+            inset: 0;
+            background-color: #ffffff;
+            z-index: 9999;
+            opacity: 1;
+            transition: opacity 1.2s ease-in-out;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .blob {
+            position: absolute;
+            width: 70vw;
+            height: 70vw;
+            max-width: 800px;
+            max-height: 800px;
+            border-radius: 50%;
+            filter: blur(100px);
+            opacity: 0.8;
+            will-change: transform;
+            animation-duration: 3s;
+            animation-iteration-count: infinite;
+            animation-timing-function: linear;
+        }
+
+        .blob-1 { background-color: rgba(150, 175, 215, 0.7); top: -20%; left: -20%; animation-name: moveBlob1; }
+        .blob-2 { background-color: rgba(250, 225, 235, 0.8); bottom: -20%; right: -20%; animation-name: moveBlob2; }
+        .blob-3 { background-color: rgba(180, 240, 210, 0.7); top: 10%; right: 10%; animation-name: moveBlob3; }
+        .blob-4 { background-color: rgba(255, 250, 200, 0.7); bottom: 10%; left: 10%; animation-name: moveBlob4; }
+
+        @keyframes moveBlob1 {
+            0% { transform: translate(-30vw, -30vh) scale(1); }
+            25% { transform: translate(15vw, 15vh) scale(1.3); }
+            50% { transform: translate(30vw, -15vh) scale(1.1); }
+            75% { transform: translate(-15vw, 30vh) scale(1.4); }
+            100% { transform: translate(-30vw, -30vh) scale(1); }
+        }
+        @keyframes moveBlob2 {
+            0% { transform: translate(30vw, 30vh) scale(1); }
+            25% { transform: translate(-15vw, -15vh) scale(1.3); }
+            50% { transform: translate(-30vw, 15vh) scale(1.1); }
+            75% { transform: translate(15vw, -30vh) scale(1.4); }
+            100% { transform: translate(30vw, 30vh) scale(1); }
+        }
+        @keyframes moveBlob3 {
+            0% { transform: translate(15vw, -15vh) scale(1); }
+            25% { transform: translate(-30vw, 15vh) scale(1.3); }
+            50% { transform: translate(30vw, 30vh) scale(1.1); }
+            75% { transform: translate(-15vw, -30vh) scale(1.4); }
+            100% { transform: translate(15vw, -15vh) scale(1); }
+        }
+        @keyframes moveBlob4 {
+            0% { transform: translate(-15vw, 15vh) scale(1); }
+            25% { transform: translate(30vw, -15vh) scale(1.3); }
+            50% { transform: translate(-30vw, -30vh) scale(1.1); }
+            75% { transform: translate(15vw, 30vh) scale(1.4); }
+            100% { transform: translate(-15vw, 15vh) scale(1); }
+        }
+
+        main {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            padding: 0;
+            box-sizing: border-box;
+            position: relative;
+        }
+
+        .icon-scatter-container {
+            position: relative;
+            width: 100vw;
+            max-width: none;
+            height: 100vh;
+        }
+
+        .icon-wrapper {
+            position: absolute;
+            z-index: 20;
+            cursor: pointer;
+            will-change: transform, left, top;
+            transition: left 0.8s cubic-bezier(0.2, 0.8, 0.2, 1), 
+                        top 0.8s cubic-bezier(0.2, 0.8, 0.2, 1), 
+                        width 0.6s cubic-bezier(0.4, 0, 0.2, 1), 
+                        height 0.6s cubic-bezier(0.4, 0, 0.2, 1),
+                        opacity 0.25s ease,
+                        filter 0.25s ease;
+        }
+
+        body.album-dragging .icon-wrapper {
+            transition: opacity 0.25s ease, filter 0.25s ease;
+        }
+
+        .icon-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-style: preserve-3d;
+        }
+
+        .year-label {
+            display: none;
+            position: absolute;
+            left: 50%;
+            bottom: calc(100% + 3px);
+            transform: translateX(-50%);
+            font-family: 'Pretendard', 'Helvetica', sans-serif;
+            font-weight: 500;
+            font-size: 7pt;
+            line-height: 1;
+            letter-spacing: 0;
+            color: #000000;
+            white-space: nowrap;
+            pointer-events: none;
+            user-select: none;
+        }
+
+        .icon-wrapper.show-year-label .year-label {
+            display: block;
+        }
+
+        .album-center-indicator {
+            position: fixed;
+            left: 50%;
+            top: 58%;
+            z-index: 35;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transform: translate(-50%, -100%);
+            opacity: 0;
+            pointer-events: none;
+            user-select: none;
+            transition: opacity 0.2s ease;
+        }
+
+        .album-center-indicator.show {
+            opacity: 1;
+        }
+
+        .album-axis-dot {
+            position: fixed;
+            left: 50%;
+            top: 50%;
+            z-index: 36;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #ff39e6;
+            transform: translate(-50%, -50%);
+            opacity: 0;
+            pointer-events: none;
+            user-select: none;
+            transition: opacity 0.2s ease;
+        }
+
+        .album-axis-dot.show {
+            opacity: 1;
+        }
+
+        .album-center-name {
+            min-width: 120px;
+            margin-bottom: 7px;
+            font-family: 'Pretendard', 'Helvetica', sans-serif;
+            font-weight: 500;
+            font-size: 7pt;
+            line-height: 1;
+            letter-spacing: 0;
+            color: #000000;
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        .album-center-triangle {
+            width: 0;
+            height: 0;
+            border-left: 4px solid transparent;
+            border-right: 4px solid transparent;
+            border-top: 7px solid #000000;
+        }
+
+        #preference-float {
+            position: fixed;
+            left: 0;
+            top: 0;
+            z-index: 950;
+            font-family: 'Pretendard', 'Helvetica', sans-serif;
+            font-weight: 500;
+            font-size: 6pt;
+            line-height: 160%;
+            letter-spacing: 0;
+            color: #000000;
+            white-space: nowrap;
+            text-align: center;
+            opacity: 0;
+            filter: blur(3px);
+            transform: translate3d(0, 12px, 0) scale(0.98);
+            transition: opacity 0.5s ease, transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), filter 0.5s ease;
+            pointer-events: none;
+            user-select: none;
+            will-change: opacity, transform, filter;
+        }
+
+        #preference-float.show {
+            opacity: 1;
+            filter: blur(0);
+            transform: translate3d(0, 0, 0) scale(1);
+        }
+
+        .icon-front,
+        .icon-back {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+        }
+
+        .icon-back {
+            transform: rotateY(180deg);
+        }
+
+        #icon-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            z-index: 1500;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        #detail-container {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1600;
+            width: 80vw;
+            height: 80vh;
+            perspective: 1200px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            cursor: pointer;
+        }
+
+        #detail-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-style: preserve-3d;
+        }
+
+        #detail-container.is-flipped #detail-inner {
+            transform: rotateY(180deg);
+        }
+
+        .detail-face {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .detail-back {
+            transform: rotateY(180deg);
+        }
+
+        .detail-face img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            filter: drop-shadow(0 10px 30px rgba(0,0,0,0.3));
+            transform: scale(var(--detail-scale, 1));
+            transform-origin: center;
+            transition: transform 0.3s ease;
+        }
+
+        .butterfly-wrapper {
+            position: fixed;
+            left: 0;
+            top: 0;
+            z-index: 1000;
+            cursor: pointer;
+            pointer-events: auto;
+            will-change: transform;
+        }
+
+        .butterfly-wrapper:hover .butterfly-image {
+            filter: drop-shadow(0 0 12px rgba(255, 255, 255, 0.9));
+        }
+
+        .butterfly-bob {
+            animation: bobUpAndDown 2.8s ease-in-out infinite alternate;
+            will-change: transform;
+        }
+
+        .butterfly-image {
+            width: 60px;
+            height: 60px;
+            background-image: url('butterfly.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            animation: flapWings 0.28s cubic-bezier(0.45, 0, 0.55, 1) infinite alternate;
+            transform-origin: 50% 48%;
+            transition: filter 0.3s;
+            will-change: transform, filter;
+        }
+
+        @keyframes bobUpAndDown {
+            0% { transform: translate3d(0, -10px, 0) rotate(-2deg); }
+            50% { transform: translate3d(3px, 2px, 0) rotate(1deg); }
+            100% { transform: translate3d(-2px, 12px, 0) rotate(2deg); }
+        }
+
+        @keyframes flapWings {
+            0% { transform: perspective(120px) rotateY(-12deg) rotateZ(-3deg) scaleX(0.92) scaleY(1.04); }
+            45% { transform: perspective(120px) rotateY(8deg) rotateZ(2deg) scaleX(1.02) scaleY(0.98); }
+            100% { transform: perspective(120px) rotateY(18deg) rotateZ(4deg) scaleX(0.86) scaleY(1.05); }
+        }
+
+        #camera-widget {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            transition: all 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        #camera-widget.mini {
+            display: block;
+            bottom: 30px;
+            left: 30px;
+            width: 280px;
+            height: 180px;
+            border-radius: 12px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+            background: #000;
+            cursor: pointer;
+        }
+
+        #camera-widget.mini:hover {
+            transform: scale(1.05);
+            border-color: rgba(255, 255, 255, 0.8);
+        }
+
+        #camera-widget.mini .fullscreen-only {
+            display: none !important;
+        }
+
+        .mac-green-dot {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 6px;
+            height: 6px;
+            background-color: #4cd137;
+            border-radius: 50%;
+            box-shadow: 0 0 8px #4cd137;
+            z-index: 10;
+        }
+
+        #camera-widget.fullscreen .mac-green-dot {
+            display: none;
+        }
+
+        #camera-widget.fullscreen {
+            display: block;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(20px);
+            border-radius: 0;
+            border: none;
+        }
+
+        #camera-main-area {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            height: 100%;
+            gap: 15px;
+        }
+
+        #camera-widget.fullscreen #camera-main-area {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: auto;
+            height: auto;
+            align-items: center;
+            z-index: 2100;
+        }
+
+        #video-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            background-color: #000;
+        }
+
+        #camera-widget.fullscreen #video-container {
+            width: min(800px, calc(100vw - 28px));
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+        }
+
+        video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transform: scaleX(-1);
+            z-index: 1;
+        }
+
+        .canvas-container {
+            position: absolute !important;
+            top: 0;
+            left: 0;
+            z-index: 2 !important;
+        }
+
+        .sticker-palette {
+            display: flex;
+            flex-direction: row;
+            gap: 15px;
+            padding: 10px 15px;
+            width: min(800px, calc(100vw - 28px));
+            height: 100px;
+            background: rgba(255, 255, 255, 0.85);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            overflow-x: auto;
+            overflow-y: hidden;
+            align-items: center;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            box-sizing: border-box;
+        }
+
+        .sticker-palette::-webkit-scrollbar {
+            height: 8px;
+        }
+
+        .sticker-palette::-webkit-scrollbar-thumb {
+            background-color: #cbd1d8;
+            border-radius: 10px;
+        }
+
+        .sticker-palette img {
+            width: 52px;
+            height: 52px;
+            object-fit: contain;
+            cursor: pointer;
+            transition: transform 0.2s;
+            flex-shrink: 0;
+        }
+
+        .sticker-palette img:hover {
+            transform: scale(1.15) rotate(5deg);
+        }
+
+        .controls {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            width: min(800px, calc(100vw - 28px));
+            height: 80px;
+            margin-top: 5px;
+        }
+
+        .btn-delete {
+            background-color: transparent;
+            border: none;
+            cursor: pointer;
+            position: absolute;
+            left: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            transition: all 0.2s;
+        }
+
+        .btn-delete:hover {
+            background-color: rgba(255, 71, 87, 0.1);
+            transform: scale(1.1);
+        }
+
+        .btn-delete svg {
+            width: 28px;
+            height: 28px;
+            fill: #747d8c;
+            transition: fill 0.2s;
+        }
+
+        .btn-delete:hover svg {
+            fill: #ff4757;
+        }
+
+        .btn-capture {
+            background-color: #ff4757;
+            width: 76px;
+            height: 76px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 5px solid #ffeaa7;
+            box-shadow: 0 4px 12px rgba(255, 71, 87, 0.4);
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .btn-capture:hover {
+            background-color: #ff6b81;
+            transform: scale(1.08);
+        }
+
+        .btn-capture:active {
+            transform: scale(0.95);
+        }
+
+        .btn-capture svg {
+            width: 34px;
+            height: 34px;
+            fill: white;
+        }
+
+        #btn-close-camera {
+            position: absolute;
+            top: 30px;
+            right: 40px;
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            border: none;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.2s;
+            z-index: 3010;
+        }
+
+        #btn-close-camera:hover {
+            background: #ff4757;
+            transform: rotate(90deg);
+        }
+
+        #temp-canvas {
+            visibility: hidden;
+            position: absolute;
+            top: -9999px;
+        }
+
+        /* -------------------------------------------
+           About 팝업 CSS
+           ------------------------------------------- */
+        #about-popup {
+            position: fixed;
+            inset: 0;
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(4px);
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+        }
+
+        #about-popup.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .popup-content {
+            position: relative;
+            transform: scale(0.9);
+            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            perspective: 1000px;
+            transform-origin: top center; 
+        }
+
+        #about-popup.show .popup-content {
+            transform: scale(1);
+        }
+
+        .popup-content.folding {
+            transform: rotateX(90deg) scale(0.8);
+            opacity: 0;
+            transition: transform 0.5s ease-in, opacity 0.5s ease-in;
+        }
+
+        .popup-body {
+            position: relative;
+            cursor: pointer;
+            transition: transform 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .popup-body:hover {
+            transform: scale(1.03);
+        }
+
+        .popup-body img {
+            width: 380px;
+            height: auto;
+            display: block;
+            filter: drop-shadow(0 15px 25px rgba(0,0,0,0.1));
+        }
+
+        .popup-close-area {
+            position: absolute;
+            top: 10%;
+            left: 11%;
+            width: 12%;
+            height: 12%;
+            cursor: pointer;
+            z-index: 10;
+        }
+
+        html,
+        body,
+        body * {
+            cursor: url('cursor-wing.png') 12 7, auto !important;
+        }
+    </style>
+</head>
+<body>
+    <div id="loading-screen">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
+        <div class="blob blob-4"></div>
+    </div>
+
+    <div id="about-popup">
+        <div class="popup-content">
+            <div class="popup-close-area" id="popup-close-btn" title="닫기"></div>
+            <div class="popup-body" id="popup-body-link" title="About 페이지로 이동">
+                <img src="letter.png" alt="About Note">
+            </div>
+        </div>
+    </div>
+
+    <nav class="category-menu">
+        <div class="category-item" data-category="album">ALBUM</div>
+        <div class="category-item" data-category="year">YEAR</div>
+        <div class="category-item" data-category="genre">GENRE</div>
+        <div class="category-item" data-category="feature">FEATURE</div>
+        <div class="category-item search-toggle" id="search-toggle" role="button" tabindex="0" aria-expanded="false" aria-controls="search-panel">SEARCH</div>
+        <div class="search-panel" id="search-panel">
+            <input class="search-input" id="search-input" type="search" placeholder="search" autocomplete="off" aria-label="Search stickers">
+        </div>
+    </nav>
+
+    <div class="site-brand" id="site-brand" title="메인 배치로 돌아가기"></div>
+    <div id="preference-float" aria-hidden="true"></div>
+
+    <div id="icon-overlay"></div>
+    
+    <div id="detail-container">
+        <div id="detail-inner">
+            <div class="detail-face detail-front">
+                <img id="detail-image-front" src="" alt="Detail Image Front">
+            </div>
+            <div class="detail-face detail-back">
+                <img id="detail-image-back" src="" alt="Detail Image Back">
+            </div>
+        </div>
+    </div>
+
+    <audio id="bgMusic" loop preload="auto"></audio>
+
+    <main>
+        <div class="album-axis-dot" id="album-axis-dot" aria-hidden="true"></div>
+        <div class="album-center-indicator" id="album-center-indicator" aria-hidden="true">
+            <div class="album-center-name" id="album-center-name"></div>
+            <div class="album-center-triangle"></div>
+        </div>
+        <div class="icon-scatter-container" id="iconContainer"></div>
+    </main>
+
+    <div id="camera-widget">
+        <button id="btn-close-camera" class="fullscreen-only" type="button" title="카메라 끄기" aria-label="카메라 끄기">X</button>
+
+        <div id="camera-main-area">
+            <div id="video-container">
+                <div class="mac-green-dot"></div>
+                <video id="video" autoplay playsinline></video>
+                <canvas id="overlay-canvas"></canvas>
+            </div>
+
+            <div class="sticker-palette fullscreen-only" id="sticker-palette-container"></div>
+
+            <div class="controls fullscreen-only">
+                <button class="btn-delete" id="delete-btn" type="button" title="선택된 스티커 삭제" aria-label="선택된 스티커 삭제">
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                    </svg>
+                </button>
+                <button class="btn-capture" id="capture-btn" type="button" title="사진 찍고 저장하기" aria-label="사진 찍고 저장하기">
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M4 4h3l2-2h6l2 2h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zm8 3a5 5 0 1 0 0 10 5 5 0 0 0 0-10zm0 2a3 3 0 1 1 0 6 3 3 0 0 1 0-6z"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <canvas id="temp-canvas"></canvas>
+    </div>
+
+    <script>
+        const select = (selector, root = document) => root.querySelector(selector);
+        const byId = (id) => document.getElementById(id);
+        const STICKER_COUNT = 60;
+        const ICON_SCALE = 0.96;
+        const MAIN_ICON_SCALE = 0.8;
+        const ALBUM_ICON_SCALE = 0.7;
+        const YEAR_ICON_SCALE = 0.606;
+        const YEAR_LAYOUT_HORIZONTAL_SCALE = 1.4;
+        const YEAR_LAYOUT_VERTICAL_SCALE = 1.6;
+        const YEAR_LAYOUT_TOP_OFFSET = 5;
+        const YEAR_2019_COLUMN_GAP = 1.5;
+        const ALBUM_RING_VERTICAL_RADIUS = 36;
+        const ALBUM_LAYOUT_SOURCE_WIDTH = 1662;
+        const ALBUM_LAYOUT_SOURCE_HEIGHT = 1284;
+        const ALBUM_SOURCE_PIVOT_LEFT = 52.79;
+        const ALBUM_SOURCE_PIVOT_TOP = 47.70;
+        const ALBUM_DISPLAY_PIVOT_LEFT = 50;
+        const ALBUM_DISPLAY_PIVOT_TOP = 50;
+        const ALBUM_LAYOUT_DISPLAY_SCALE = 0.8;
+        const ALBUM_PIVOT_STICKERS = ['01', '05', '21', '26', '35', '37', '23', '40', '44', '15', '46', '19', '07', '20', '28', '02', '29', '33', '50'];
+        const ALBUM_NAME_BY_PIVOT_STICKER = {
+            '19': 'FRANK',
+            '46': 'Limbo'
+        };
+        const ALBUM_ROTATION_TARGET_LEFT = ALBUM_DISPLAY_PIVOT_LEFT;
+        const ALBUM_ROTATION_TARGET_TOP = ALBUM_DISPLAY_PIVOT_TOP;
+        const ALBUM_NAME_TARGET_ANGLE = 90;
+        const GENRE_ICON_SCALE = 0.7;
+        const FEATURE_ICON_SCALE = 0.49;
+        const FEATURE_HORIZONTAL_SPREAD = 1.12;
+        const FEATURE_VERTICAL_SPREAD = 0.5;
+        const DETAIL_FADE_MS = 300;
+        const LOADING_DURATION_MS = 3000;
+        const POPUP_FOLD_MS = 500;
+        const HIDDEN_POINTER = -1000;
+        const ICON_CENTER_LEFT = 50;
+        const ICON_CENTER_TOP = 50;
+        const ICON_HOVER_RADIUS = 150;
+        const ICON_MAX_SCALE_BOOST = 1;
+        const ICON_SCALE_SETTLE_RATE = 0.2;
+        const ICON_POSITION_SETTLE_RATE = 1; 
+        const YEAR_LABEL_REVEAL_DELAY_MS = 850;
+        const ALBUM_CENTER_REVEAL_DELAY_MS = 850;
+        const PREFERENCE_SCALE_THRESHOLD = 1.12;
+        const PREFERENCE_TOP_GAP = 8;
+        const PREFERENCE_VIEWPORT_MARGIN = 8;
+        const PREFERENCE_REFERENCE_VISIBLE_TOP_RATIO = 0.01426;
+        const CAMERA_MAX_WIDTH = 800;
+        const CAMERA_SIDE_GAP = 28;
+        const CAMERA_LAYOUT_DELAY_MS = 400;
+        const stickerAssetVersion = '1779921709408';
+        const bgMusicExtensionBySticker = {
+            '10': 'm4a',
+            '55': 'm4a',
+            '56': 'm4a'
+        };
+
+        const songSearchTermsBySticker = {
+            '01': ["November song"],
+            '02': ["Dear my blue"],
+            '03': ["0310"],
+            '04': ["그게 나였네"],
+            '05': ["1-4-3"],
+            '06': ["그의 바다"],
+            '07': ["Pinktop"],
+            '08': ["Zero"],
+            '09': ["왜? 날"],
+            '10': ["Our love is great"],
+            '11': ["가끔"],
+            '12': ["그런 일은"],
+            '13': ["Datoom"],
+            '14': ["Lovelovelove"],
+            '15': ["Always in love"],
+            '16': ["Sad"],
+            '17': ["True lover"],
+            '18': ["Bunny"],
+            '19': ["넘어와"],
+            '20': ["Rest"],
+            '21': ["Nerdy love"],
+            '22': ["그럴때마다"],
+            '23': ["55"],
+            '24': ["Popo"],
+            '25': ["우주를 건너"],
+            '26': ["다시 난, 여기"],
+            '27': ["산책"],
+            '28': ["돌아가자"],
+            '29': ["I’m in love"],
+            '30': ["그건 아마 우리의 잘못은 아닐거야"],
+            '31': ["Square"],
+            '32': ["London"],
+            '33': ["내가 날 모르는 것처럼"],
+            '34': ["Bye bye my blue"],
+            '35': ["아주 오래된 기억"],
+            '36': ["La La La love song"],
+            '37': ["0415"],
+            '38': ["Loveless"],
+            '39': ["Antifreeze"],
+            '40': ["낙서"],
+            '41': ["Hate you"],
+            '42': ["Material girl"],
+            '43': ["Love on top"],
+            '44': ["스며들기 좋은 오늘"],
+            '45': ["Let me go!"],
+            '46': ["Champagne Supernova"],
+            '47': ["strange"],
+            '48': ["한계"],
+            '49': ["야간비행"],
+            '50': ["막내"],
+            '51': ["Summer"],
+            '52': ["Reality"],
+            '53': ["물고기"],
+            '54': ["장마"],
+            '55': ["나였으면"],
+            '56': ["나비효과"],
+            '57': ["혼자두지마"],
+            '58': ["지켜줄게"],
+            '59': ["Violet"],
+            '60': ["I am not your ocean anymore"]
+        };
+
+        const preferenceScoreBySticker = {
+            '01': 4,
+            '02': 4,
+            '03': 6,
+            '04': 4,
+            '05': 3,
+            '06': 6,
+            '07': 4,
+            '08': 4,
+            '09': 3,
+            '10': 6,
+            '11': 7,
+            '12': 7,
+            '13': 7,
+            '14': 4,
+            '15': 5,
+            '16': 5,
+            '17': 3,
+            '18': 3,
+            '19': 2,
+            '20': 5,
+            '21': 5,
+            '22': 4,
+            '23': 3,
+            '24': 5,
+            '25': 4,
+            '26': 3,
+            '27': 4,
+            '28': 3,
+            '29': 3,
+            '30': 9,
+            '31': 8,
+            '32': 6,
+            '33': 5,
+            '34': 5,
+            '35': 3,
+            '36': 3,
+            '37': 3,
+            '38': 3,
+            '39': 4,
+            '40': 2,
+            '41': 3,
+            '42': 5,
+            '43': 3,
+            '44': 7,
+            '45': 5,
+            '46': 3,
+            '47': 5,
+            '48': 6,
+            '49': 7,
+            '50': 4,
+            '51': 8,
+            '52': 6,
+            '53': 6,
+            '54': 6,
+            '55': 7,
+            '56': 7,
+            '57': 5,
+            '58': 3,
+            '59': 4,
+            '60': 7
+        };
+
+        const stickerVisibleTopRatioBySticker = {
+            '01': 0.01233,
+            '02': 0.22437,
+            '03': 0.08698,
+            '04': 0.07185,
+            '05': 0.13782,
+            '06': 0.01953,
+            '07': 0.01226,
+            '08': 0.03382,
+            '09': 0.16834,
+            '10': 0.01051,
+            '11': 0.01297,
+            '12': 0.15181,
+            '13': 0.22596,
+            '14': 0.30112,
+            '15': 0.18387,
+            '16': 0.00819,
+            '17': 0.00744,
+            '18': 0.00355,
+            '19': 0.18478,
+            '20': 0.01061,
+            '21': 0.12071,
+            '22': 0.01368,
+            '23': 0.11608,
+            '24': 0.07024,
+            '25': 0.2081,
+            '26': 0.0206,
+            '27': 0.02013,
+            '28': 0.04743,
+            '29': 0.07392,
+            '30': 0.00248,
+            '31': 0.0845,
+            '32': 0.01099,
+            '33': 0.13176,
+            '34': 0.00257,
+            '35': 0.00517,
+            '36': 0.0,
+            '37': 0.14573,
+            '38': 0.01774,
+            '39': 0.00402,
+            '40': 0.01689,
+            '41': 0.01426,
+            '42': 0.0,
+            '43': 0.01381,
+            '44': 0.00762,
+            '45': 0.00247,
+            '46': 0.00437,
+            '47': 0.00643,
+            '48': 0.05172,
+            '49': 0.01157,
+            '50': 0.17389,
+            '51': 0.0,
+            '52': 0.16623,
+            '53': 0.22777,
+            '54': 0.0721,
+            '55': 0.18717,
+            '56': 0.23239,
+            '57': 0.00295,
+            '58': 0.10444,
+            '59': 0.00279,
+            '60': 0.13003
+        };
+
+        const detailScaleBySticker = {
+            '01': 0.8548,
+            '02': 0.7066,
+            '03': 0.8618,
+            '04': 0.8072,
+            '05': 0.7056,
+            '06': 0.827,
+            '07': 0.806,
+            '08': 0.8102,
+            '09': 0.6703,
+            '10': 0.9236,
+            '11': 0.9646,
+            '12': 0.7886,
+            '13': 0.6167,
+            '14': 0.7215,
+            '15': 0.6484,
+            '16': 0.7982,
+            '17': 0.9001,
+            '18': 0.9856,
+            '19': 0.6533,
+            '20': 0.9637,
+            '21': 0.7012,
+            '22': 0.8651,
+            '23': 0.7404,
+            '24': 0.7633,
+            '25': 0.6334,
+            '26': 1.0243,
+            '27': 0.8877,
+            '28': 0.762,
+            '29': 0.7562,
+            '30': 1.0,
+            '31': 0.7434,
+            '32': 1.0035,
+            '33': 0.7128,
+            '34': 0.985,
+            '35': 1.0356,
+            '36': 1.0388,
+            '37': 0.6897,
+            '38': 0.8178,
+            '39': 0.8421,
+            '40': 0.8378,
+            '41': 0.8175,
+            '42': 1.3813,
+            '43': 0.9606,
+            '44': 0.9717,
+            '45': 1.1138,
+            '46': 0.8137,
+            '47': 0.8423,
+            '48': 0.7746,
+            '49': 0.8356,
+            '50': 0.6806,
+            '51': 0.867,
+            '52': 0.672,
+            '53': 0.6186,
+            '54': 0.773,
+            '55': 0.6469,
+            '56': 0.6178,
+            '57': 0.9084,
+            '58': 0.7206,
+            '59': 0.8784,
+            '60': 0.7128
+        };
+
+
+
+        // 1. 이벤트 리스너를 기다리지 않고 스크립트 파싱 즉시 가려버림 (깜빡임 완벽 차단)
+        const initUrlParams = new URLSearchParams(window.location.search);
+        const isFromAbout = initUrlParams.get('from') === 'about';
+        
+        if (isFromAbout) {
+            const tempLoadingScreen = byId('loading-screen');
+            const tempAboutPopup = byId('about-popup');
+            
+            if (tempLoadingScreen) {
+                tempLoadingScreen.style.display = 'none'; // DOM 생성 직후 즉시 날려버림
+            }
+            if (tempAboutPopup) {
+                tempAboutPopup.style.display = 'none';
+                tempAboutPopup.classList.remove('show');
+            }
+        }
+
+        // 이후의 일반적인 로드 이벤트
+        window.addEventListener('load', () => {
+            const loadingScreen = byId('loading-screen');
+            const aboutPopup = byId('about-popup');
+            const popupContent = select('.popup-content');
+            const popupCloseBtn = byId('popup-close-btn');
+            const popupBodyLink = byId('popup-body-link');
+
+            // 처음 접속했을 때만 작동 (about에서 안 왔을 때)
+            if (!isFromAbout) {
+                if (aboutPopup) {
+                    aboutPopup.classList.add('show');
+                }
+                if (loadingScreen) {
+                    setTimeout(() => {
+                        loadingScreen.style.opacity = '0';
+                        loadingScreen.style.visibility = 'hidden';
+                    }, LOADING_DURATION_MS);
+                }
+            }
+
+            if (popupCloseBtn && popupContent && aboutPopup) {
+                popupCloseBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    document.dispatchEvent(new CustomEvent('aboutPopupClosed'));
+                    popupContent.classList.add('folding');
+                    setTimeout(() => {
+                        aboutPopup.classList.remove('show');
+                    }, POPUP_FOLD_MS);
+                });
+            }
+
+            if (popupBodyLink) {
+                popupBodyLink.addEventListener('click', () => {
+                    window.location.href = 'about.html';
+                });
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            let isPhotoBoothOpen = false;
+            let isDetailOpen = false;
+            
+            // 팝업 상태를 isFromAbout에 따라 올바르게 설정
+            let isAboutPopupOpen = Boolean(byId('about-popup')) && !isFromAbout;
+
+            const iconOverlay = byId('icon-overlay');
+            const detailContainer = byId('detail-container');
+            const detailImageFront = byId('detail-image-front');
+            const detailImageBack = byId('detail-image-back');
+            const bgMusic = byId('bgMusic');
+
+            function stickerUrl(numStr) {
+                return `sticker${numStr}.png?v=${stickerAssetVersion}`;
+            }
+
+            function bgMusicUrl(numStr) {
+                const extension = bgMusicExtensionBySticker[numStr] || 'mp3';
+                return `bgm_${numStr}.${extension}?v=${stickerAssetVersion}`;
+            }
+
+            function playBgMusic(numStr) {
+                if (!bgMusic) return;
+                bgMusic.src = bgMusicUrl(numStr);
+                bgMusic.currentTime = 0;
+                bgMusic.play().catch(err => console.log('Detail music play blocked:', err));
+            }
+
+            function stopBgMusic() {
+                if (bgMusic) {
+                    bgMusic.pause();
+                    bgMusic.currentTime = 0;
+                    bgMusic.removeAttribute('src');
+                    bgMusic.load();
+                }
+            }
+
+            function setDetailVisibility(isVisible) {
+                iconOverlay.style.display = isVisible ? 'block' : 'none';
+                detailContainer.style.display = isVisible ? 'block' : 'none';
+            }
+
+            function setDetailOpacity(opacity) {
+                iconOverlay.style.opacity = opacity;
+                detailContainer.style.opacity = opacity;
+            }
+
+            function openDetailView(numStr) {
+                isDetailOpen = true;
+                detailImageFront.src = `detail${numStr}.png?v=${stickerAssetVersion}`;
+                detailImageBack.src = `detail${numStr}.png?v=${stickerAssetVersion}`;
+                detailContainer.style.setProperty('--detail-scale', detailScaleBySticker[numStr] || 1);
+                playBgMusic(numStr);
+
+                setDetailVisibility(true);
+
+                requestAnimationFrame(() => {
+                    setDetailOpacity('1');
+                });
+            }
+
+            function closeDetailView() {
+                isDetailOpen = false;
+                setDetailOpacity('0');
+                detailContainer.classList.remove('is-flipped');
+                stopBgMusic();
+                
+                setTimeout(() => {
+                    if (!isDetailOpen) {
+                        setDetailVisibility(false);
+                        detailImageFront.src = '';
+                        detailImageBack.src = '';
+                        detailContainer.style.removeProperty('--detail-scale');
+                    }
+                }, DETAIL_FADE_MS);
+            }
+            
+            iconOverlay.addEventListener('click', closeDetailView);
+            
+            detailContainer.addEventListener('click', (e) => {
+                e.stopPropagation();
+                detailContainer.classList.toggle('is-flipped');
+            });
+
+            document.addEventListener('aboutPopupClosed', () => {
+                isAboutPopupOpen = false;
+            });
+
+            const stickerPalette = byId('sticker-palette-container');
+            if (stickerPalette) {
+                for (let i = 1; i <= STICKER_COUNT; i++) {
+                    const numStr = i.toString().padStart(2, '0');
+                    const img = document.createElement('img');
+                    img.src = stickerUrl(numStr);
+                    img.id = `stk${i}`;
+                    img.alt = `sticker${numStr}`;
+                    img.addEventListener('click', () => window.addSticker(img.id));
+                    stickerPalette.appendChild(img);
+                }
+            }
+
+            const albumGroups = [
+                { name: 'Love you on Christmas', stickers: ['01'], axisLeft: 15, axisTop: 22 },
+                { name: 'I MET PEEJAY', stickers: ['05'], axisLeft: 23, axisTop: 18 },
+                { name: 'Archive 01', stickers: ['23'], axisLeft: 32, axisTop: 16 },
+                { name: 'Bye bye my blue', stickers: ['06', '08', '34'], axisLeft: 20, axisTop: 34, gap: 6.4 },
+                { name: 'Our love is great', stickers: ['02', '10', '30', '33', '49', '58'], axisLeft: 30, axisTop: 38, gap: 6.6 },
+                { name: 'Every letter I sent you.', stickers: ['03', '13', '14', '17', '18', '20', '24', '31', '32'], axisLeft: 36, axisTop: 71, gap: 5.4 },
+                { name: 'Nerdy Love', stickers: ['21'], axisLeft: 61, axisTop: 47 },
+                { name: 'Limbo', stickers: ['19'], axisLeft: 67, axisTop: 58 },
+                { name: '물고기', stickers: ['04', '50', '53'], axisLeft: 76, axisTop: 42, gap: 6.3 },
+                { name: '커버', stickers: ['11', '12', '15', '36', '43', '46', '47', '52', '54', '55', '56'], axisLeft: 86, axisTop: 42, gap: 5.2 },
+                { name: '선물', stickers: ['09', '22', '27', '28', '39', '48'], axisLeft: 72, axisTop: 58, gap: 6.5 },
+                { name: 'tellusboutyourself', stickers: ['29', '37', '38', '41', '60'], axisLeft: 45, axisTop: 60, gap: 6.8 },
+                { name: 'FRANK', stickers: ['25', '57'], axisLeft: 52, axisTop: 66, gap: 7 },
+                { name: 'The Volunteers', stickers: ['07', '16', '42', '45', '51', '59'], axisLeft: 60, axisTop: 76, gap: 7.2 },
+                { name: '사랑의 불시착', stickers: ['26'], axisLeft: 80, axisTop: 49 },
+                { name: '시카고 타자기', stickers: ['35'], axisLeft: 84, axisTop: 54 },
+                { name: '낙서', stickers: ['40'], axisLeft: 82, axisTop: 46 },
+                { name: 'A-TEEN', stickers: ['44'], axisLeft: 78, axisTop: 59 }
+            ];
+
+            function clamp(value, min, max) {
+                return Math.min(Math.max(value, min), max);
+            }
+
+            function rotationFacingCenter(left, top) {
+                const angleToCenter = Math.atan2(50 - top, 50 - left) * (180 / Math.PI);
+                return angleToCenter + 90;
+            }
+
+            function createAlbumLayout(groups) {
+                const layout = Array.from({ length: STICKER_COUNT });
+                const albumIconSize = 68;
+                const viewportWidth = Math.max(window.innerWidth || 1, 1);
+                const viewportHeight = Math.max(window.innerHeight || 1, 1);
+                const aspectAdjustedX = viewportHeight / viewportWidth;
+                const albumInnerRadius = 8;
+
+                groups.forEach((group, groupIndex) => {
+                    const progress = groups.length > 1 ? groupIndex / (groups.length - 1) : 0.5;
+                    const sourceLeft = group.axisLeft ?? 50 + Math.cos((-90 + 360 * progress) * (Math.PI / 180)) * 38;
+                    const sourceTop = group.axisTop ?? 50 + Math.sin((-90 + 360 * progress) * (Math.PI / 180)) * 38;
+                    const axisAngle = Math.atan2(sourceTop - 50, sourceLeft - 50);
+                    const count = group.stickers.length;
+                    const axisLeft = 50 + Math.cos(axisAngle) * ALBUM_RING_VERTICAL_RADIUS * aspectAdjustedX;
+                    const axisTop = 50 + Math.sin(axisAngle) * ALBUM_RING_VERTICAL_RADIUS;
+                    const groupRotation = rotationFacingCenter(axisLeft, axisTop);
+
+                    group.stickers.forEach((numStr, itemIndex) => {
+                        const radius = count > 1
+                            ? albumInnerRadius + ((ALBUM_RING_VERTICAL_RADIUS - albumInnerRadius) * itemIndex / (count - 1))
+                            : ALBUM_RING_VERTICAL_RADIUS;
+                        const left = 50 + Math.cos(axisAngle) * radius * aspectAdjustedX;
+                        const top = 50 + Math.sin(axisAngle) * radius;
+                        layout[parseInt(numStr, 10) - 1] = {
+                            left: left.toFixed(2),
+                            top: top.toFixed(2),
+                            size: albumIconSize,
+                            rotation: groupRotation
+                        };
+                    });
+                });
+
+                return layout;
+            }
+
+            const imageExtractedAlbumLayout = [
+                { left: "40.66", top: "24.83", size: 68, rotation: 159.641 },
+                { left: "39.95", top: "46.10", size: 68, rotation: 111.209 },
+                { left: "41.25", top: "74.05", size: 68, rotation: 18.001 },
+                { left: "31.43", top: "25.99", size: 68, rotation: 142.281 },
+                { left: "44.36", top: "21.60", size: 68, rotation: 168.768 },
+                { left: "37.23", top: "48.73", size: 68, rotation: 95.679 },
+                { left: "50.11", top: "53.28", size: 68, rotation: -1.921 },
+                { left: "34.27", top: "52.04", size: 68, rotation: 82.611 },
+                { left: "34.80", top: "67.67", size: 68, rotation: 40.703 },
+                { left: "24.55", top: "33.54", size: 68, rotation: 122.893 },
+                { left: "63.67", top: "47.90", size: 68, rotation: 261.266 },
+                { left: "73.46", top: "57.85", size: 68, rotation: -71.499 },
+                { left: "43.51", top: "65.41", size: 68, rotation: 21.412 },
+                { left: "40.21", top: "77.60", size: 68, rotation: 17.387 },
+                { left: "61.18", top: "45.24", size: 68, rotation: 246.938 },
+                { left: "50.12", top: "58.71", size: 68, rotation: -0.789 },
+                { left: "44.50", top: "61.59", size: 68, rotation: 24.522 },
+                { left: "42.35", top: "69.56", size: 68, rotation: 19.570 },
+                { left: "55.08", top: "51.76", size: 68, rotation: -70.891 },
+                { left: "46.90", top: "52.69", size: 68, rotation: 55.404 },
+                { left: "49.13", top: "19.49", size: 68, rotation: 178.367 },
+                { left: "32.64", top: "71.97", size: 68, rotation: 38.315 },
+                { left: "62.09", top: "30.89", size: 68, rotation: 212.320 },
+                { left: "37.76", top: "86.40", size: 68, rotation: 16.222 },
+                { left: "58.59", top: "61.97", size: 68, rotation: -35.664 },
+                { left: "53.65", top: "19.65", size: 68, rotation: 186.858 },
+                { left: "40.70", top: "55.00", size: 68, rotation: 61.736 },
+                { left: "42.87", top: "50.27", size: 68, rotation: 87.831 },
+                { left: "37.29", top: "41.96", size: 68, rotation: 122.316 },
+                { left: "29.19", top: "34.36", size: 68, rotation: 126.927 },
+                { left: "45.77", top: "57.38", size: 68, rotation: 30.468 },
+                { left: "38.91", top: "81.58", size: 68, rotation: 17.037 },
+                { left: "37.16", top: "35.93", size: 68, rotation: 137.617 },
+                { left: "31.19", top: "55.27", size: 68, rotation: 74.349 },
+                { left: "57.49", top: "22.95", size: 68, rotation: 195.477 },
+                { left: "76.06", top: "60.49", size: 68, rotation: -68.074 },
+                { left: "60.32", top: "26.55", size: 68, rotation: 203.754 },
+                { left: "29.77", top: "45.51", size: 68, rotation: 102.514 },
+                { left: "38.64", top: "59.19", size: 68, rotation: 51.028 },
+                { left: "62.90", top: "35.55", size: 68, rotation: 221.756 },
+                { left: "33.39", top: "43.67", size: 68, rotation: 110.862 },
+                { left: "50.11", top: "76.79", size: 68, rotation: -0.235 },
+                { left: "70.75", top: "55.25", size: 68, rotation: -75.801 },
+                { left: "62.50", top: "40.61", size: 68, rotation: 233.086 },
+                { left: "49.99", top: "69.76", size: 68, rotation: 0.029 },
+                { left: "58.44", top: "48.83", size: 68, rotation: 262.108 },
+                { left: "84.06", top: "68.38", size: 68, rotation: -61.647 },
+                { left: "36.65", top: "63.76", size: 68, rotation: 44.134 },
+                { left: "33.20", top: "35.03", size: 68, rotation: 131.703 },
+                { left: "38.30", top: "29.79", size: 68, rotation: 149.933 },
+                { left: "50.09", top: "63.91", size: 68, rotation: -0.371 },
+                { left: "66.25", top: "50.44", size: 68, rotation: -88.449 },
+                { left: "34.85", top: "28.00", size: 68, rotation: 145.447 },
+                { left: "81.51", top: "65.75", size: 68, rotation: -63.442 },
+                { left: "79.01", top: "63.40", size: 68, rotation: -65.207 },
+                { left: "68.55", top: "52.57", size: 68, rotation: -82.112 },
+                { left: "56.77", top: "56.93", size: 68, rotation: -44.331 },
+                { left: "20.34", top: "33.09", size: 68, rotation: 119.689 },
+                { left: "50.49", top: "82.73", size: 68, rotation: -0.858 },
+                { left: "25.94", top: "47.33", size: 68, rotation: 96.332 }
+            ];
+
+            function getAlbumSourceOffset(layoutItem) {
+                return {
+                    x: ((parseFloat(layoutItem.left) - 50) / 100) * ALBUM_LAYOUT_SOURCE_WIDTH,
+                    y: ((parseFloat(layoutItem.top) - 50) / 100) * ALBUM_LAYOUT_SOURCE_HEIGHT
+                };
+            }
+
+            let albumSourcePivot = null;
+
+            function solveThreeByThree(matrix) {
+                const rows = matrix.map(row => row.slice());
+                for (let col = 0; col < 3; col++) {
+                    let pivotRow = col;
+                    for (let row = col + 1; row < 3; row++) {
+                        if (Math.abs(rows[row][col]) > Math.abs(rows[pivotRow][col])) {
+                            pivotRow = row;
+                        }
+                    }
+
+                    if (Math.abs(rows[pivotRow][col]) < 0.000001) return null;
+                    [rows[col], rows[pivotRow]] = [rows[pivotRow], rows[col]];
+
+                    const pivot = rows[col][col];
+                    for (let c = col; c < 4; c++) {
+                        rows[col][c] /= pivot;
+                    }
+
+                    for (let row = 0; row < 3; row++) {
+                        if (row === col) continue;
+                        const factor = rows[row][col];
+                        for (let c = col; c < 4; c++) {
+                            rows[row][c] -= factor * rows[col][c];
+                        }
+                    }
+                }
+
+                return rows.map(row => row[3]);
+            }
+
+            function getAlbumSourcePivot() {
+                if (albumSourcePivot) return albumSourcePivot;
+
+                const pivotLayoutItems = ALBUM_PIVOT_STICKERS
+                    .map(numStr => imageExtractedAlbumLayout[parseInt(numStr, 10) - 1])
+                    .filter(Boolean);
+
+                const sums = pivotLayoutItems
+                    .map(getAlbumSourceOffset)
+                    .reduce((acc, point) => {
+                        const { x, y } = point;
+                        const rhs = -(x * x + y * y);
+                        acc.xx += x * x;
+                        acc.xy += x * y;
+                        acc.x += x;
+                        acc.yy += y * y;
+                        acc.y += y;
+                        acc.count += 1;
+                        acc.xr += x * rhs;
+                        acc.yr += y * rhs;
+                        acc.r += rhs;
+                        return acc;
+                    }, {
+                        xx: 0,
+                        xy: 0,
+                        x: 0,
+                        yy: 0,
+                        y: 0,
+                        count: 0,
+                        xr: 0,
+                        yr: 0,
+                        r: 0
+                    });
+
+                const solution = solveThreeByThree([
+                    [sums.xx, sums.xy, sums.x, sums.xr],
+                    [sums.xy, sums.yy, sums.y, sums.yr],
+                    [sums.x, sums.y, sums.count, sums.r]
+                ]);
+
+                if (!solution) {
+                    albumSourcePivot = {
+                        left: ALBUM_SOURCE_PIVOT_LEFT,
+                        top: ALBUM_SOURCE_PIVOT_TOP
+                    };
+                    return albumSourcePivot;
+                }
+
+                const [d, e] = solution;
+                albumSourcePivot = {
+                    left: 50 + ((-d / 2) / ALBUM_LAYOUT_SOURCE_WIDTH) * 100,
+                    top: 50 + ((-e / 2) / ALBUM_LAYOUT_SOURCE_HEIGHT) * 100
+                };
+
+                return albumSourcePivot;
+            }
+
+            function rotationFacingAlbumCenterFromOffset(offset) {
+                const angleToCenter = Math.atan2(-offset.y, -offset.x) * (180 / Math.PI);
+                return angleToCenter + 90;
+            }
+
+            function rotationFacingViewportPoint(left, top, targetLeft, targetTop) {
+                const dx = ((targetLeft - left) / 100) * window.innerWidth;
+                const dy = ((targetTop - top) / 100) * window.innerHeight;
+                return Math.atan2(dy, dx) * (180 / Math.PI) + 90;
+            }
+
+            function normalizeRotation(degrees) {
+                return ((degrees + 180) % 360 + 360) % 360 - 180;
+            }
+
+            function rotateViewportPointAround(left, top, targetLeft, targetTop, degrees) {
+                const angle = degrees * (Math.PI / 180);
+                const viewportWidth = Math.max(window.innerWidth || 1, 1);
+                const viewportHeight = Math.max(window.innerHeight || 1, 1);
+                const pivotX = (targetLeft / 100) * viewportWidth;
+                const pivotY = (targetTop / 100) * viewportHeight;
+                const dx = (left / 100) * viewportWidth - pivotX;
+                const dy = (top / 100) * viewportHeight - pivotY;
+                const cos = Math.cos(angle);
+                const sin = Math.sin(angle);
+
+                return {
+                    left: ((pivotX + dx * cos - dy * sin) / viewportWidth) * 100,
+                    top: ((pivotY + dx * sin + dy * cos) / viewportHeight) * 100
+                };
+            }
+
+            function setAlbumRotatedOrigin(data, baseLeft, baseTop, baseRotation) {
+                const rotated = rotateViewportPointAround(
+                    baseLeft,
+                    baseTop,
+                    ALBUM_ROTATION_TARGET_LEFT,
+                    ALBUM_ROTATION_TARGET_TOP,
+                    albumSetRotation
+                );
+                data.originLeft = rotated.left;
+                data.originTop = rotated.top;
+                data.originRotation = normalizeRotation(baseRotation + albumSetRotation);
+            }
+
+            const albumRotationBySticker = albumGroups.reduce((rotationMap, group) => {
+                const offsets = group.stickers
+                    .map(numStr => imageExtractedAlbumLayout[parseInt(numStr, 10) - 1])
+                    .filter(Boolean)
+                    .map(getAlbumSourceOffset);
+                const axisOffset = offsets.reduce((sum, offset) => ({
+                    x: sum.x + offset.x,
+                    y: sum.y + offset.y
+                }), { x: 0, y: 0 });
+                axisOffset.x /= offsets.length || 1;
+                axisOffset.y /= offsets.length || 1;
+                const groupRotation = rotationFacingAlbumCenterFromOffset(axisOffset);
+
+                group.stickers.forEach(numStr => {
+                    rotationMap[numStr] = groupRotation;
+                });
+                return rotationMap;
+            }, {});
+
+            const imageExtractedYearLayout = [
+                { left: "51.50", top: "33.00", size: 79, year: 2016 },
+                { left: "57.50", top: "24.00", size: 79, year: 2019 },
+                { left: "57.50", top: "51.00", size: 79, year: 2019 },
+                { left: "66.50", top: "24.00", size: 79, year: 2022 },
+                { left: "72.50", top: "24.00", size: 79, year: 2025 },
+                { left: "51.50", top: "24.00", size: 79, year: 2016 },
+                { left: "63.50", top: "24.00", size: 79, year: 2021 },
+                { left: "51.50", top: "27.00", size: 79, year: 2016 },
+                { left: "63.50", top: "39.00", size: 79, year: 2021 },
+                { left: "57.50", top: "27.00", size: 79, year: 2019 },
+                { left: "45.50", top: "24.00", size: 79, year: 2014 },
+                { left: "33.50", top: "24.00", size: 79, year: 2000 },
+                { left: "57.50", top: "54.00", size: 79, year: 2019 },
+                { left: "57.50", top: "57.00", size: 79, year: 2019 },
+                { left: "54.50", top: "30.00", size: 79, year: 2017 },
+                { left: "63.50", top: "27.00", size: 79, year: 2021 },
+                { left: "57.50", top: "60.00", size: 79, year: 2019 },
+                { left: "57.50", top: "63.00", size: 79, year: 2019 },
+                { left: "54.50", top: "24.00", size: 79, year: 2017 },
+                { left: "57.50", top: "66.00", size: 79, year: 2019 },
+                { left: "60.50", top: "24.00", size: 79, year: 2020 },
+                { left: "63.50", top: "42.00", size: 79, year: 2021 },
+                { left: "69.50", top: "24.00", size: 79, year: 2023 },
+                { left: "57.50", top: "69.00", size: 79, year: 2019 },
+                { left: "48.50", top: "24.00", size: 79, year: 2015 },
+                { left: "60.50", top: "27.00", size: 79, year: 2020 },
+                { left: "63.50", top: "45.00", size: 79, year: 2021 },
+                { left: "63.50", top: "48.00", size: 79, year: 2021 },
+                { left: "60.50", top: "30.00", size: 79, year: 2020 },
+                { left: "57.50", top: "30.00", size: 79, year: 2019 },
+                { left: "57.50", top: "72.00", size: 79, year: 2019 },
+                { left: "57.50", top: "75.00", size: 79, year: 2019 },
+                { left: "57.50", top: "33.00", size: 79, year: 2019 },
+                { left: "51.50", top: "30.00", size: 79, year: 2016 },
+                { left: "54.50", top: "27.00", size: 79, year: 2017 },
+                { left: "30.50", top: "24.00", size: 79, year: 1996 },
+                { left: "60.50", top: "33.00", size: 79, year: 2020 },
+                { left: "60.50", top: "36.00", size: 79, year: 2020 },
+                { left: "63.50", top: "51.00", size: 79, year: 2021 },
+                { left: "57.50", top: "48.00", size: 79, year: 2019 },
+                { left: "60.50", top: "39.00", size: 79, year: 2020 },
+                { left: "66.50", top: "33.00", size: 79, year: 2022 },
+                { left: "42.50", top: "27.00", size: 79, year: 2011 },
+                { left: "57.50", top: "42.00", size: 79, year: 2019 },
+                { left: "63.50", top: "30.00", size: 79, year: 2021 },
+                { left: "30.50", top: "27.00", size: 79, year: 1996 },
+                { left: "57.50", top: "45.00", size: 79, year: 2019 },
+                { left: "63.50", top: "54.00", size: 79, year: 2021 },
+                { left: "57.50", top: "36.00", size: 79, year: 2019 },
+                { left: "66.50", top: "27.00", size: 79, year: 2022 },
+                { left: "63.50", top: "33.00", size: 79, year: 2021 },
+                { left: "27.50", top: "24.00", size: 79, year: 1982 },
+                { left: "66.50", top: "30.00", size: 79, year: 2022 },
+                { left: "42.50", top: "24.00", size: 79, year: 2011 },
+                { left: "36.50", top: "24.00", size: 79, year: 2004 },
+                { left: "39.50", top: "24.00", size: 79, year: 2008 },
+                { left: "48.50", top: "27.00", size: 79, year: 2015 },
+                { left: "57.50", top: "39.00", size: 79, year: 2019 },
+                { left: "63.50", top: "36.00", size: 79, year: 2021 },
+                { left: "60.50", top: "42.00", size: 79, year: 2020 }
+            ];
+
+            const layouts = {
+                main: [
+                  { "left": "21.63", "top": "12.42", "size": 79 }, { "left": "28.19", "top": "12.98", "size": 79 },
+                  { "left": "53.08", "top": "52.01", "size": 79 }, { "left": "13.10", "top": "80.84", "size": 79 },
+                  { "left": "54.75", "top": "39.63", "size": 79 }, { "left": "63.25", "top": "38.66", "size": 79 },
+                  { "left": "68.69", "top": "31.20", "size": 79 }, { "left": "79.97", "top": "27.97", "size": 79 },
+                  { "left": "85.14", "top": "47.24", "size": 79 }, { "left": "69.96", "top": "56.30", "size": 79 },
+                  { "left": "24.94", "top": "21.47", "size": 79 }, { "left": "42.19", "top": "42.45", "size": 79 },
+                  { "left": "35.13", "top": "31.12", "size": 87 }, { "left": "48.09", "top": "43.75", "size": 79 },
+                  { "left": "49.24", "top": "69.29", "size": 79 }, { "left": "63.34", "top": "51.55", "size": 79 },
+                  { "left": "74.39", "top": "35.17", "size": 79 }, { "left": "79.55", "top": "40.18", "size": 79 },
+                  { "left": "76.36", "top": "60.46", "size": 79 }, { "left": "44.55", "top": "14.15", "size": 79 },
+                  { "left": "22.96", "top": "47.65", "size": 79 }, { "left": "26.57", "top": "56.42", "size": 79 },
+                  { "left": "29.93", "top": "65.01", "size": 79 }, { "left": "35.71", "top": "65.39", "size": 79 },
+                  { "left": "52.14", "top": "78.93", "size": 79 }, { "left": "58.68", "top": "45.74", "size": 79 },
+                  { "left": "74.61", "top": "47.83", "size": 79 }, { "left": "74.31", "top": "24.36", "size": 79 },
+                  { "left": "89.99", "top": "40.00", "size": 79 }, { "left": "63.79", "top": "26.09", "size": 79 },
+                  { "left": "19.33", "top": "56.62", "size": 89 }, { "left": "60.22", "top": "72.17", "size": 79 },
+                  { "left": "33.42", "top": "53.22", "size": 79 }, { "left": "39.04", "top": "78.46", "size": 79 },
+                  { "left": "26.64", "top": "80.50", "size": 103 }, { "left": "23.78", "top": "67.97", "size": 79 },
+                  { "left": "73.64", "top": "75.62", "size": 79 }, { "left": "79.73", "top": "53.48", "size": 79 },
+                  { "left": "89.99", "top": "55.43", "size": 79 }, { "left": "30.86", "top": "24.68", "size": 79 },
+                  { "left": "15.80", "top": "68.72", "size": 89 }, { "left": "22.16", "top": "92.87", "size": 79 },
+                  { "left": "32.85", "top": "75.33", "size": 79 }, { "left": "39.60", "top": "53.13", "size": 79 },
+                  { "left": "19.96", "top": "79.38", "size": 103 }, { "left": "55.00", "top": "69.03", "size": 79 },
+                  { "left": "69.22", "top": "45.13", "size": 79 }, { "left": "84.82", "top": "32.69", "size": 79 },
+                  { "left": "79.42", "top": "78.77", "size": 79 }, { "left": "84.07", "top": "59.30", "size": 79 },
+                  { "left": "10.86", "top": "59.50", "size": 89 }, { "left": "30.70", "top": "44.10", "size": 79 },
+                  { "left": "29.26", "top": "92.79", "size": 79 }, { "left": "34.38", "top": "86.50", "size": 79 },
+                  { "left": "41.73", "top": "66.85", "size": 79 }, { "left": "57.18", "top": "81.16", "size": 79 },
+                  { "left": "68.29", "top": "69.52", "size": 79 }, { "left": "68.79", "top": "85.84", "size": 79 },
+                  { "left": "75.04", "top": "88.27", "size": 79 }, { "left": "81.40", "top": "89.75", "size": 79 }
+                ],
+                album: imageExtractedAlbumLayout,
+                year: imageExtractedYearLayout,
+                genre: [
+                  { "left": "66.25", "top": "19.31", "size": 54.4 },                   { "left": "27.94", "top": "66.68", "size": 54.4 },
+                  { "left": "24.54", "top": "19.31", "size": 54.4 },                   { "left": "29.81", "top": "19.31", "size": 54.4 },
+                  { "left": "22.71", "top": "66.68", "size": 54.4 },                   { "left": "55.17", "top": "66.68", "size": 54.4 },
+                  { "left": "66.10", "top": "32.02", "size": 54.4 },                   { "left": "49.09", "top": "66.68", "size": 54.4 },
+                  { "left": "32.82", "top": "80.71", "size": 54.4 },                   { "left": "71.26", "top": "19.31", "size": 54.4 },
+                  { "left": "17.02", "top": "66.68", "size": 54.4 },                   { "left": "19.67", "top": "19.31", "size": 54.4 },
+                  { "left": "33.88", "top": "66.68", "size": 54.4 },                   { "left": "71.50", "top": "80.71", "size": 54.4 },
+                  { "left": "61.45", "top": "44.29", "size": 54.4 },                   { "left": "60.58", "top": "32.02", "size": 54.4 },
+                  { "left": "44.07", "top": "55.15", "size": 54.4 },                   { "left": "76.21", "top": "19.31", "size": 54.4 },
+                  { "left": "38.88", "top": "55.15", "size": 54.4 },                   { "left": "34.90", "top": "19.31", "size": 54.4 },
+                  { "left": "28.32", "top": "55.15", "size": 54.4 },                   { "left": "27.21", "top": "80.71", "size": 54.4 },
+                  { "left": "11.43", "top": "66.68", "size": 54.4 },                   { "left": "66.26", "top": "66.68", "size": 54.4 },
+                  { "left": "55.72", "top": "19.31", "size": 54.4 },                   { "left": "48.87", "top": "80.71", "size": 54.4 },
+                  { "left": "43.99", "top": "80.71", "size": 54.4 },                   { "left": "45.73", "top": "19.31", "size": 54.4 },
+                  { "left": "40.44", "top": "19.31", "size": 54.4 },                   { "left": "77.16", "top": "80.71", "size": 54.4 },
+                  { "left": "61.01", "top": "19.31", "size": 54.4 },                   { "left": "50.63", "top": "19.31", "size": 54.4 },
+                  { "left": "71.06", "top": "66.68", "size": 54.4 },                   { "left": "84.68", "top": "44.29", "size": 54.4 },
+                  { "left": "44.25", "top": "44.29", "size": 54.4 },                   { "left": "38.63", "top": "66.68", "size": 54.4 },
+                  { "left": "76.09", "top": "44.29", "size": 54.4 },                   { "left": "80.79", "top": "44.29", "size": 54.4 },
+                  { "left": "90.00", "top": "32.02", "size": 54.4 },                   { "left": "33.67", "top": "55.15", "size": 54.4 },
+                  { "left": "39.80", "top": "44.29", "size": 54.4 },                   { "left": "48.01", "top": "44.29", "size": 54.4 },
+                  { "left": "52.14", "top": "44.29", "size": 54.4 },                   { "left": "56.43", "top": "44.29", "size": 54.4 },
+                  { "left": "56.37", "top": "32.02", "size": 54.4 },                   { "left": "85.32", "top": "32.02", "size": 54.4 },
+                  { "left": "70.93", "top": "44.29", "size": 54.4 },                   { "left": "38.36", "top": "80.71", "size": 54.4 },
+                  { "left": "22.09", "top": "80.71", "size": 54.4 },                   { "left": "43.74", "top": "66.68", "size": 54.4 },
+                  { "left": "75.35", "top": "32.02", "size": 54.4 },                   { "left": "66.03", "top": "44.29", "size": 54.4 },
+                  { "left": "80.47", "top": "32.02", "size": 54.4 },                   { "left": "17.60", "top": "80.71", "size": 54.4 },
+                  { "left": "60.72", "top": "80.71", "size": 54.4 },                   { "left": "54.52", "top": "80.71", "size": 54.4 },
+                  { "left": "60.53", "top": "66.68", "size": 54.4 },                   { "left": "65.64", "top": "80.71", "size": 54.4 },
+                  { "left": "70.91", "top": "32.02", "size": 54.4 },                   { "left": "76.59", "top": "66.68", "size": 54.4 }
+                ],
+                feature: [
+                  { "left": "77.59", "top": "53.12", "size": 68 },                   { "left": "54.40", "top": "53.12", "size": 68 },
+                  { "left": "43.58", "top": "85.84", "size": 68 },                   { "left": "69.45", "top": "53.12", "size": 68 },
+                  { "left": "74.28", "top": "40.73", "size": 68 },                   { "left": "54.40", "top": "40.73", "size": 68 },
+                  { "left": "82.00", "top": "40.73", "size": 68 },                   { "left": "54.40", "top": "29.13", "size": 68 },
+                  { "left": "48.97", "top": "53.12", "size": 68 },                   { "left": "64.44", "top": "65.14", "size": 68 },
+                  { "left": "32.87", "top": "40.73", "size": 68 },                   { "left": "16.03", "top": "65.14", "size": 68 },
+                  { "left": "43.58", "top": "95.25", "size": 68 },                   { "left": "43.58", "top": "75.48", "size": 68 },
+                  { "left": "27.55", "top": "29.13", "size": 68 },                   { "left": "82.00", "top": "29.13", "size": 68 },
+                  { "left": "43.58", "top": "8.52", "size": 68 },                   { "left": "43.58", "top": "29.13", "size": 68 },
+                  { "left": "21.64", "top": "40.73", "size": 68 },                   { "left": "43.58", "top": "18.47", "size": 68 },
+                  { "left": "21.64", "top": "75.48", "size": 68 },                   { "left": "48.97", "top": "29.13", "size": 68 },
+                  { "left": "21.64", "top": "65.14", "size": 68 },                   { "left": "43.58", "top": "65.14", "size": 68 },
+                  { "left": "38.19", "top": "29.13", "size": 68 },                   { "left": "32.87", "top": "65.14", "size": 68 },
+                  { "left": "48.97", "top": "65.14", "size": 68 },                   { "left": "48.97", "top": "75.48", "size": 68 },
+                  { "left": "59.37", "top": "29.13", "size": 68 },                   { "left": "64.44", "top": "29.13", "size": 68 },
+                  { "left": "43.58", "top": "53.12", "size": 68 },                   { "left": "43.58", "top": "40.73", "size": 68 },
+                  { "left": "64.44", "top": "53.12", "size": 68 },                   { "left": "54.40", "top": "65.14", "size": 68 },
+                  { "left": "27.55", "top": "40.73", "size": 68 },                   { "left": "32.87", "top": "29.13", "size": 68 },
+                  { "left": "38.19", "top": "40.73", "size": 68 },                   { "left": "59.37", "top": "53.12", "size": 68 },
+                  { "left": "48.97", "top": "85.84", "size": 68 },                   { "left": "21.64", "top": "53.12", "size": 68 },
+                  { "left": "59.37", "top": "40.73", "size": 68 },                   { "left": "27.55", "top": "65.14", "size": 68 },
+                  { "left": "27.55", "top": "53.12", "size": 68 },                   { "left": "16.03", "top": "53.12", "size": 68 },
+                  { "left": "82.00", "top": "53.12", "size": 68 },                   { "left": "27.55", "top": "85.84", "size": 68 },
+                  { "left": "32.87", "top": "18.47", "size": 68 },                   { "left": "48.97", "top": "40.73", "size": 68 },
+                  { "left": "64.44", "top": "75.48", "size": 68 },                   { "left": "69.45", "top": "40.73", "size": 68 },
+                  { "left": "82.00", "top": "65.14", "size": 68 },                   { "left": "27.55", "top": "75.48", "size": 68 },
+                  { "left": "69.45", "top": "65.14", "size": 68 },                   { "left": "32.87", "top": "53.12", "size": 68 },
+                  { "left": "32.87", "top": "85.84", "size": 68 },                   { "left": "32.87", "top": "75.48", "size": 68 },
+                  { "left": "38.19", "top": "53.12", "size": 68 },                   { "left": "64.44", "top": "40.73", "size": 68 },
+                  { "left": "82.00", "top": "75.48", "size": 68 },                   { "left": "59.37", "top": "65.14", "size": 68 }
+                ]
+            };
+            const container = byId('iconContainer');
+            const albumAxisDot = byId('album-axis-dot');
+            const albumCenterIndicator = byId('album-center-indicator');
+            const albumCenterName = byId('album-center-name');
+            const iconElementsData = [];
+            let activeCategory = 'main';
+            let albumSetRotation = 0;
+
+            function resolveLayout(category) {
+                const layout = layouts[category];
+                if (typeof layout === 'function') return layout();
+                return typeof layout === 'string' ? layouts[layout] : layout;
+            }
+
+            function getIconSize(layoutItem, category = 'main') {
+                const mainScale = ['main', 'album', 'year'].includes(category) ? MAIN_ICON_SCALE : 1;
+                const albumScale = category === 'album' ? ALBUM_ICON_SCALE * ALBUM_LAYOUT_DISPLAY_SCALE : 1;
+                const yearScale = category === 'year' ? YEAR_ICON_SCALE : 1;
+                const genreScale = category === 'genre' ? GENRE_ICON_SCALE : 1;
+                const featureScale = category === 'feature' ? FEATURE_ICON_SCALE : 1;
+                return layoutItem.size * ICON_SCALE * mainScale * albumScale * yearScale * genreScale * featureScale;
+            }
+
+            function getAlbumLayoutScale() {
+                const viewportWidth = Math.max(window.innerWidth || 1, 1);
+                const viewportHeight = Math.max(window.innerHeight || 1, 1);
+                return Math.min(
+                    viewportWidth / ALBUM_LAYOUT_SOURCE_WIDTH,
+                    viewportHeight / ALBUM_LAYOUT_SOURCE_HEIGHT
+                );
+            }
+
+            function getAlbumViewportBaseLeft(left) {
+                const sourceX = ((left - 50) / 100) * ALBUM_LAYOUT_SOURCE_WIDTH;
+                return 50 + ((sourceX * getAlbumLayoutScale()) / window.innerWidth) * 100;
+            }
+
+            function getAlbumViewportBaseTop(top) {
+                const sourceY = ((top - 50) / 100) * ALBUM_LAYOUT_SOURCE_HEIGHT;
+                return 50 + ((sourceY * getAlbumLayoutScale()) / window.innerHeight) * 100;
+            }
+
+            function getYearLayoutCenter(axis = 'left') {
+                const values = imageExtractedYearLayout.map((item, index) => parseFloat(getYearLayoutItem(item, index)[axis]));
+                return (Math.min(...values) + Math.max(...values)) / 2;
+            }
+
+            function getYearLayoutItem(layoutItem, index = 0) {
+                if (layoutItem.year !== 2019) return layoutItem;
+
+                const year2019Items = imageExtractedYearLayout
+                    .map((item, itemIndex) => ({ item, itemIndex }))
+                    .filter(({ item }) => item.year === 2019)
+                    .sort((a, b) => parseFloat(a.item.top) - parseFloat(b.item.top));
+                const orderedIndex = year2019Items.findIndex(({ itemIndex }) => itemIndex === index);
+                if (orderedIndex < 0) return layoutItem;
+
+                const firstTop = parseFloat(year2019Items[0].item.top);
+                const baseLeft = parseFloat(layoutItem.left);
+                const rowIndex = Math.floor(orderedIndex / 2);
+                const columnOffset = orderedIndex % 2 === 0
+                    ? -YEAR_2019_COLUMN_GAP / 2
+                    : YEAR_2019_COLUMN_GAP / 2;
+
+                return {
+                    ...layoutItem,
+                    left: String(baseLeft + columnOffset),
+                    top: String(firstTop + rowIndex * 3)
+                };
+            }
+
+            function getIconLeft(layoutItem, category = 'main', index = 0) {
+                layoutItem = category === 'year' ? getYearLayoutItem(layoutItem, index) : layoutItem;
+                const left = parseFloat(layoutItem.left);
+                if (category === 'album') {
+                    const baseLeft = getAlbumViewportBaseLeft(left);
+                    const sourcePivot = getAlbumSourcePivot();
+                    const pivotLeft = getAlbumViewportBaseLeft(sourcePivot.left);
+                    return ALBUM_DISPLAY_PIVOT_LEFT + (baseLeft - pivotLeft) * ALBUM_LAYOUT_DISPLAY_SCALE;
+                }
+                if (category === 'year') {
+                    const centerLeft = getYearLayoutCenter('left');
+                    return centerLeft + (left - centerLeft) * YEAR_LAYOUT_HORIZONTAL_SCALE;
+                }
+                if (category !== 'feature') return left;
+                return clamp(50 + (left - 50) * FEATURE_HORIZONTAL_SPREAD, 6, 94);
+            }
+
+            function getIconTop(layoutItem, category = 'main', index = 0) {
+                layoutItem = category === 'year' ? getYearLayoutItem(layoutItem, index) : layoutItem;
+                const top = parseFloat(layoutItem.top);
+                if (category === 'album') {
+                    const baseTop = getAlbumViewportBaseTop(top);
+                    const sourcePivot = getAlbumSourcePivot();
+                    const pivotTop = getAlbumViewportBaseTop(sourcePivot.top);
+                    return ALBUM_DISPLAY_PIVOT_TOP + (baseTop - pivotTop) * ALBUM_LAYOUT_DISPLAY_SCALE;
+                }
+                if (category === 'year') {
+                    const centerTop = getYearLayoutCenter('top');
+                    return centerTop + (top - centerTop) * YEAR_LAYOUT_VERTICAL_SCALE + YEAR_LAYOUT_TOP_OFFSET;
+                }
+                if (category !== 'feature') return top;
+                return clamp(50 + (top - 50) * FEATURE_VERTICAL_SPREAD, 6, 94);
+            }
+
+            function getIconRotation(layoutItem, category = 'main', index = 0) {
+                if (category === 'album') {
+                    return rotationFacingViewportPoint(
+                        getIconLeft(layoutItem, category),
+                        getIconTop(layoutItem, category),
+                        ALBUM_ROTATION_TARGET_LEFT,
+                        ALBUM_ROTATION_TARGET_TOP
+                    );
+                }
+                return layoutItem.rotation || 0;
+            }
+
+            function getYearLabelStickers(layout) {
+                const labelStickerByYear = layout.reduce((map, layoutItem, index) => {
+                    const year = layoutItem.year;
+                    if (!year) return map;
+                    const current = map[year];
+                    const top = parseFloat(layoutItem.top);
+                    if (!current || top < current.top) {
+                        map[year] = {
+                            sticker: (index + 1).toString().padStart(2, '0'),
+                            top
+                        };
+                    }
+                    return map;
+                }, {});
+
+                return Object.values(labelStickerByYear).reduce((set, item) => {
+                    set.add(item.sticker);
+                    return set;
+                }, new Set());
+            }
+
+            let yearLabelRevealTimer = null;
+            let albumCenterRevealTimer = null;
+            let albumCenterReady = false;
+
+            function clearYearLabelRevealTimer() {
+                if (yearLabelRevealTimer) {
+                    clearTimeout(yearLabelRevealTimer);
+                    yearLabelRevealTimer = null;
+                }
+            }
+
+            function clearAlbumCenterRevealTimer() {
+                if (albumCenterRevealTimer) {
+                    clearTimeout(albumCenterRevealTimer);
+                    albumCenterRevealTimer = null;
+                }
+            }
+
+            function hideAllYearLabels() {
+                iconElementsData.forEach(data => {
+                    data.element.classList.remove('show-year-label');
+                    if (data.yearLabel) {
+                        data.yearLabel.textContent = '';
+                    }
+                });
+            }
+
+            function showSettledYearLabels(targetLayout, yearLabelStickers) {
+                iconElementsData.forEach((data, index) => {
+                    if (!targetLayout[index]) return;
+                    const numStr = (index + 1).toString().padStart(2, '0');
+                    const shouldShowYearLabel = yearLabelStickers.has(numStr);
+                    data.element.classList.toggle('show-year-label', shouldShowYearLabel);
+                    if (data.yearLabel) {
+                        data.yearLabel.textContent = shouldShowYearLabel ? String(targetLayout[index].year || '') : '';
+                    }
+                });
+            }
+
+            function applyLayout(category) {
+                const targetLayout = resolveLayout(category);
+                if (!targetLayout) return;
+                activeCategory = category;
+                const yearLabelStickers = category === 'year' ? getYearLabelStickers(targetLayout) : new Set();
+                clearYearLabelRevealTimer();
+                clearAlbumCenterRevealTimer();
+                albumCenterReady = false;
+                hideAllYearLabels();
+                hideAlbumCenterIndicator();
+
+                iconElementsData.forEach((data, index) => {
+                    if (targetLayout[index]) {
+                        const baseLeft = getIconLeft(targetLayout[index], category, index);
+                        const baseTop = getIconTop(targetLayout[index], category, index);
+                        const baseRotation = getIconRotation(targetLayout[index], category, index);
+                        data.layoutBaseLeft = baseLeft;
+                        data.layoutBaseTop = baseTop;
+                        data.layoutBaseRotation = baseRotation;
+                        if (category === 'album') {
+                            setAlbumRotatedOrigin(data, baseLeft, baseTop, baseRotation);
+                        } else {
+                            data.originLeft = baseLeft;
+                            data.originTop = baseTop;
+                            data.originRotation = baseRotation;
+                        }
+                        const newSize = getIconSize(targetLayout[index], category);
+                        data.element.style.width = `${newSize}px`;
+                        data.element.style.height = `${newSize}px`;
+                    }
+                });
+
+                if (category === 'year') {
+                    yearLabelRevealTimer = setTimeout(() => {
+                        showSettledYearLabels(targetLayout, yearLabelStickers);
+                        yearLabelRevealTimer = null;
+                    }, YEAR_LABEL_REVEAL_DELAY_MS);
+                }
+
+                if (category === 'album') {
+                    albumCenterRevealTimer = setTimeout(() => {
+                        albumCenterReady = true;
+                        updateAlbumCenterName();
+                        albumCenterRevealTimer = null;
+                    }, ALBUM_CENTER_REVEAL_DELAY_MS);
+                }
+            }
+
+            function rotateAlbumSet(deltaDegrees) {
+                if (activeCategory !== 'album') return;
+                albumSetRotation = normalizeRotation(albumSetRotation + deltaDegrees);
+                iconElementsData.forEach(data => {
+                    if (
+                        Number.isFinite(data.layoutBaseLeft) &&
+                        Number.isFinite(data.layoutBaseTop) &&
+                        Number.isFinite(data.layoutBaseRotation)
+                    ) {
+                        setAlbumRotatedOrigin(
+                            data,
+                            data.layoutBaseLeft,
+                            data.layoutBaseTop,
+                            data.layoutBaseRotation
+                        );
+                    }
+                });
+                if (albumCenterReady) {
+                    updateAlbumCenterName();
+                }
+            }
+
+            function hideAlbumCenterIndicator() {
+                albumCenterIndicator?.classList.remove('show');
+            }
+
+            function getAlbumGroupDisplayAngle(group) {
+                const vectors = group.stickers
+                    .map(numStr => iconElementsData[parseInt(numStr, 10) - 1])
+                    .filter(data => (
+                        data &&
+                        Number.isFinite(data.originLeft) &&
+                        Number.isFinite(data.originTop)
+                    ))
+                    .map(data => ({
+                        x: ((data.originLeft - ALBUM_DISPLAY_PIVOT_LEFT) / 100) * window.innerWidth,
+                        y: ((data.originTop - ALBUM_DISPLAY_PIVOT_TOP) / 100) * window.innerHeight
+                    }));
+
+                if (!vectors.length) return null;
+
+                const vector = vectors.reduce((sum, item) => ({
+                    x: sum.x + item.x,
+                    y: sum.y + item.y
+                }), { x: 0, y: 0 });
+
+                return Math.atan2(vector.y / vectors.length, vector.x / vectors.length) * (180 / Math.PI);
+            }
+
+            function getAlbumPivotStickerDisplayAngle(numStr) {
+                const data = iconElementsData[parseInt(numStr, 10) - 1];
+                if (
+                    !data ||
+                    !Number.isFinite(data.originLeft) ||
+                    !Number.isFinite(data.originTop)
+                ) return null;
+
+                const x = ((data.originLeft - ALBUM_DISPLAY_PIVOT_LEFT) / 100) * window.innerWidth;
+                const y = ((data.originTop - ALBUM_DISPLAY_PIVOT_TOP) / 100) * window.innerHeight;
+                return Math.atan2(y, x) * (180 / Math.PI);
+            }
+
+            function getMappedAlbumNameByPivotSticker() {
+                const activePivotSticker = ALBUM_PIVOT_STICKERS.reduce((best, numStr) => {
+                    const angle = getAlbumPivotStickerDisplayAngle(numStr);
+                    if (!Number.isFinite(angle)) return best;
+                    const diff = Math.abs(shortestAngleDiff(angle, ALBUM_NAME_TARGET_ANGLE));
+                    if (!best || diff < best.diff) {
+                        return { numStr, diff };
+                    }
+                    return best;
+                }, null);
+
+                return activePivotSticker ? ALBUM_NAME_BY_PIVOT_STICKER[activePivotSticker.numStr] : null;
+            }
+
+            function updateAlbumCenterName() {
+                if (!albumCenterIndicator || !albumCenterName) return;
+                if (activeCategory !== 'album' || !albumCenterReady) {
+                    hideAlbumCenterIndicator();
+                    return;
+                }
+
+                const activeGroup = albumGroups.reduce((best, group) => {
+                    const angle = getAlbumGroupDisplayAngle(group);
+                    if (!Number.isFinite(angle)) return best;
+                    const diff = Math.abs(shortestAngleDiff(angle, ALBUM_NAME_TARGET_ANGLE));
+                    if (!best || diff < best.diff) {
+                        return { group, diff };
+                    }
+                    return best;
+                }, null);
+
+                if (!activeGroup) {
+                    hideAlbumCenterIndicator();
+                    return;
+                }
+
+                albumCenterName.textContent = getMappedAlbumNameByPivotSticker() || activeGroup.group.name;
+                albumCenterIndicator.classList.add('show');
+            }
+
+            const currentLayout = resolveLayout('main');
+
+            if (container) {
+                for (let i = 0; i < currentLayout.length; i++) {
+                    const numStr = (i + 1).toString().padStart(2, '0');
+                    const oLeft = parseFloat(currentLayout[i].left);
+                    const oTop = parseFloat(currentLayout[i].top);
+                    const oSize = getIconSize(currentLayout[i], 'main');
+
+                    const iconWrapper = document.createElement('div');
+                    iconWrapper.classList.add('icon-wrapper');
+                    iconWrapper.dataset.sticker = numStr;
+                    iconWrapper.setAttribute('aria-label', `sticker${numStr}`);
+                    iconWrapper.style.width = `${oSize}px`;
+                    iconWrapper.style.height = `${oSize}px`;
+                    iconWrapper.style.left = `${ICON_CENTER_LEFT}%`;
+                    iconWrapper.style.top = `${ICON_CENTER_TOP}%`;
+                    iconWrapper.style.transform = `translate3d(-50%, -50%, 0) scale(1)`;
+
+                    const iconInner = document.createElement('div');
+                    iconInner.classList.add('icon-inner');
+
+                    const frontFace = document.createElement('div');
+                    frontFace.classList.add('icon-front');
+                    frontFace.style.backgroundImage = `url('${stickerUrl(numStr)}')`;
+
+                    const backFace = document.createElement('div');
+                    backFace.classList.add('icon-back');
+                    backFace.style.backgroundImage = `url('${stickerUrl(numStr)}')`;
+
+                    iconInner.appendChild(frontFace);
+                    iconInner.appendChild(backFace);
+                    iconWrapper.appendChild(iconInner);
+
+                    const yearLabel = document.createElement('div');
+                    yearLabel.classList.add('year-label');
+                    iconWrapper.appendChild(yearLabel);
+
+                    container.appendChild(iconWrapper);
+
+                    const dataObj = {
+                        element: iconWrapper,
+                        yearLabel,
+                        originLeft: oLeft,
+                        originTop: oTop,
+                        layoutBaseLeft: oLeft,
+                        layoutBaseTop: oTop,
+                        layoutBaseRotation: 0,
+                        currentLeft: ICON_CENTER_LEFT,
+                        currentTop: ICON_CENTER_TOP,
+                        targetLeft: ICON_CENTER_LEFT,
+                        targetTop: ICON_CENTER_TOP,
+                        originRotation: 0,
+                        currentRotation: 0,
+                        targetRotation: 0,
+                        currentScale: 1,
+                        targetScale: 1,
+                        sticker: numStr,
+                        preferenceScore: preferenceScoreBySticker[numStr] || 1,
+                        visibleTopRatio: stickerVisibleTopRatioBySticker[numStr] || 0,
+                        searchTerms: [
+                            numStr,
+                            String(i + 1),
+                            `sticker${numStr}`,
+                            `detail${numStr}`,
+                            `bgm${numStr}`,
+                            `bgm_${numStr}`,
+                            ...(songSearchTermsBySticker[numStr] || [])
+                        ],
+                        cx: 0,
+                        cy: 0
+                    };
+                    iconElementsData.push(dataObj);
+
+                    iconWrapper.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        if (!isDetailOpen) openDetailView(numStr);
+                    });
+                }
+
+                const menuItems = document.querySelectorAll('.category-item[data-category]');
+                const searchToggle = byId('search-toggle');
+                const searchPanel = byId('search-panel');
+                const searchInput = byId('search-input');
+
+                function normalizeSearchValue(value) {
+                    return String(value)
+                        .trim()
+                        .toLowerCase()
+                        .normalize('NFKC')
+                        .replace(/[\s'’"“”.,!?\-_/()[\]:;]+/g, '');
+                }
+
+                function applySearchFilter(value) {
+                    const query = normalizeSearchValue(value);
+                    iconElementsData.forEach(data => {
+                        const isMatch = !query || data.searchTerms.some(term => normalizeSearchValue(term).includes(query));
+                        data.element.style.opacity = isMatch ? '1' : '0.12';
+                        data.element.style.pointerEvents = isMatch ? 'auto' : 'none';
+                        data.element.style.filter = isMatch ? '' : 'grayscale(1)';
+                    });
+                }
+
+                function setSearchOpen(isOpen, { clear = false } = {}) {
+                    if (!searchToggle || !searchPanel || !searchInput) return;
+
+                    searchPanel.classList.toggle('open', isOpen);
+                    searchToggle.classList.toggle('active', isOpen);
+                    searchToggle.setAttribute('aria-expanded', String(isOpen));
+
+                    if (clear) {
+                        searchInput.value = '';
+                        applySearchFilter('');
+                    }
+
+                    if (isOpen) {
+                        searchInput.focus();
+                    }
+                }
+
+                if (searchToggle && searchPanel && searchInput) {
+                    searchToggle.addEventListener('click', () => {
+                        const shouldOpen = !searchPanel.classList.contains('open');
+                        menuItems.forEach(el => el.classList.remove('active'));
+                        setSearchOpen(shouldOpen, { clear: !shouldOpen });
+                    });
+
+                    searchToggle.addEventListener('keydown', (e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            searchToggle.click();
+                        }
+                    });
+
+                    searchInput.addEventListener('input', (e) => {
+                        applySearchFilter(e.target.value);
+                    });
+
+                    searchInput.addEventListener('keydown', (e) => {
+                        if (e.key === 'Escape') {
+                            setSearchOpen(false, { clear: true });
+                            searchToggle.focus();
+                        }
+                    });
+                }
+
+                menuItems.forEach(item => {
+                    item.addEventListener('click', (e) => {
+                        menuItems.forEach(el => el.classList.remove('active'));
+                        e.target.classList.add('active');
+                        setSearchOpen(false, { clear: true });
+                        const selectedCategory = e.target.getAttribute('data-category');
+                        applyLayout(selectedCategory);
+                    });
+                });
+
+                const siteBrand = byId('site-brand');
+                if (siteBrand) {
+                    siteBrand.addEventListener('mouseenter', () => {
+                        document.body.classList.add('logo-hover');
+                    });
+
+                    siteBrand.addEventListener('mouseleave', () => {
+                        document.body.classList.remove('logo-hover');
+                    });
+
+                    siteBrand.addEventListener('focus', () => {
+                        document.body.classList.add('logo-hover');
+                    });
+
+                    siteBrand.addEventListener('blur', () => {
+                        document.body.classList.remove('logo-hover');
+                    });
+
+                    siteBrand.addEventListener('click', () => {
+                        menuItems.forEach(el => el.classList.remove('active'));
+                        setSearchOpen(false, { clear: true });
+                        applyLayout('main');
+                    });
+                }
+
+                let mouseX = HIDDEN_POINTER;
+                let mouseY = HIDDEN_POINTER;
+                window.addEventListener('mousemove', e => {
+                    mouseX = e.clientX;
+                    mouseY = e.clientY;
+                });
+                window.addEventListener('mouseout', () => {
+                    mouseX = HIDDEN_POINTER;
+                    mouseY = HIDDEN_POINTER;
+                });
+
+                function isAlbumSpinEmptyTarget(target) {
+                    if (activeCategory !== 'album') return false;
+                    if (isAboutPopupOpen || isPhotoBoothOpen || isDetailOpen) return false;
+                    if (!target?.closest) return true;
+                    return !target.closest(
+                        '.icon-wrapper, .category-item, .site-brand, #search-panel, #detail-container, #icon-overlay, #camera-widget, #photo-booth-button, .butterfly-wrapper'
+                    );
+                }
+
+                function albumPivotAngleFromPointer(e) {
+                    const pivotX = (ALBUM_ROTATION_TARGET_LEFT / 100) * window.innerWidth;
+                    const pivotY = (ALBUM_ROTATION_TARGET_TOP / 100) * window.innerHeight;
+                    return Math.atan2(e.clientY - pivotY, e.clientX - pivotX) * (180 / Math.PI);
+                }
+
+                let albumDragSpin = null;
+
+                window.addEventListener('pointerdown', (e) => {
+                    if (e.button !== undefined && e.button !== 0) return;
+                    if (!isAlbumSpinEmptyTarget(e.target)) return;
+                    e.preventDefault();
+                    albumDragSpin = {
+                        pointerId: e.pointerId,
+                        previousAngle: albumPivotAngleFromPointer(e)
+                    };
+                    document.body.classList.add('album-dragging');
+                    window.getSelection?.().removeAllRanges();
+                });
+
+                window.addEventListener('pointermove', (e) => {
+                    if (!albumDragSpin || e.pointerId !== albumDragSpin.pointerId) return;
+                    e.preventDefault();
+                    const nextAngle = albumPivotAngleFromPointer(e);
+                    rotateAlbumSet(shortestAngleDiff(albumDragSpin.previousAngle, nextAngle));
+                    albumDragSpin.previousAngle = nextAngle;
+                });
+
+                function stopAlbumDragSpin(e) {
+                    if (!albumDragSpin) return;
+                    if (e?.pointerId !== undefined && e.pointerId !== albumDragSpin.pointerId) return;
+                    albumDragSpin = null;
+                    document.body.classList.remove('album-dragging');
+                }
+
+                window.addEventListener('pointerup', stopAlbumDragSpin);
+                window.addEventListener('pointercancel', stopAlbumDragSpin);
+                window.addEventListener('blur', stopAlbumDragSpin);
+
+                const preferenceFloat = byId('preference-float');
+                let activePreferenceSticker = null;
+
+                function heartsForPreference(score) {
+                    const count = Math.max(1, Math.min(10, Math.round(score || 1)));
+                    return '♥'.repeat(count);
+                }
+
+                function positionPreferenceForIcon(data) {
+                    if (!preferenceFloat) return false;
+
+                    const iconRect = data.element.getBoundingClientRect();
+                    const preferenceWidth = preferenceFloat.offsetWidth;
+                    const preferenceHeight = preferenceFloat.offsetHeight;
+                    const x = Math.min(
+                        window.innerWidth - preferenceWidth - PREFERENCE_VIEWPORT_MARGIN,
+                        Math.max(PREFERENCE_VIEWPORT_MARGIN, iconRect.left + iconRect.width / 2 - preferenceWidth / 2)
+                    );
+                    const visibleIconTop = iconRect.top + (data.visibleTopRatio * iconRect.height);
+                    const referenceGap = PREFERENCE_TOP_GAP + (PREFERENCE_REFERENCE_VISIBLE_TOP_RATIO * iconRect.height);
+                    const y = visibleIconTop - preferenceHeight - referenceGap;
+
+                    if (y < PREFERENCE_VIEWPORT_MARGIN) return false;
+
+                    preferenceFloat.style.left = `${x.toFixed(1)}px`;
+                    preferenceFloat.style.top = `${y.toFixed(1)}px`;
+                    return true;
+                }
+
+                function showPreferenceForIcon(data) {
+                    if (!preferenceFloat || !data) return;
+
+                    if (activePreferenceSticker !== data.sticker) {
+                        activePreferenceSticker = data.sticker;
+                        preferenceFloat.textContent = heartsForPreference(data.preferenceScore);
+                        preferenceFloat.classList.remove('show');
+                    }
+
+                    if (!positionPreferenceForIcon(data)) {
+                        hidePreference();
+                        return;
+                    }
+
+                    preferenceFloat.offsetHeight;
+                    requestAnimationFrame(() => {
+                        preferenceFloat.classList.add('show');
+                    });
+                }
+
+                function hidePreference() {
+                    if (!preferenceFloat) return;
+                    activePreferenceSticker = null;
+                    preferenceFloat.classList.remove('show');
+                }
+
+                function updatePreferenceFloat() {
+                    if (!preferenceFloat || albumDragSpin || isAboutPopupOpen || isPhotoBoothOpen || isDetailOpen || mouseX === HIDDEN_POINTER) {
+                        hidePreference();
+                        return;
+                    }
+
+                    const activeIcon = iconElementsData.reduce((best, data) => {
+                        if (data.element.style.pointerEvents === 'none') return best;
+                        if (data.currentScale < PREFERENCE_SCALE_THRESHOLD) return best;
+                        if (!best || data.currentScale > best.currentScale) return data;
+                        return best;
+                    }, null);
+
+                    if (activeIcon) {
+                        showPreferenceForIcon(activeIcon);
+                    } else {
+                        hidePreference();
+                    }
+                }
+
+                function settleMotion(current, target, rate, epsilon) {
+                    const next = current + (target - current) * rate;
+                    return Math.abs(next - target) < epsilon ? target : next;
+                }
+
+                function shortestAngleDiff(current, target) {
+                    return ((target - current + 540) % 360) - 180;
+                }
+
+                function settleAngleMotion(current, target, rate, epsilon) {
+                    const diff = shortestAngleDiff(current, target);
+                    return Math.abs(diff) < epsilon ? target : current + diff * rate;
+                }
+
+                function animateIcons() {
+                    iconElementsData.forEach(data => {
+                        data.cx = (data.currentLeft / 100) * window.innerWidth;
+                        data.cy = (data.currentTop / 100) * window.innerHeight;
+
+                        if (isAboutPopupOpen) {
+                            data.targetScale = 1;
+                            data.targetLeft = ICON_CENTER_LEFT;
+                            data.targetTop = ICON_CENTER_TOP;
+                            data.targetRotation = 0;
+                        } else if (isPhotoBoothOpen || isDetailOpen) {
+                            data.targetScale = 1;
+                            data.targetLeft = data.originLeft;
+                            data.targetTop = data.originTop;
+                            data.targetRotation = data.originRotation;
+                        } else {
+                            data.targetLeft = data.originLeft;
+                            data.targetTop = data.originTop;
+                            data.targetRotation = data.originRotation;
+                            if (albumDragSpin) {
+                                data.targetScale = 1;
+                            } else {
+                                const dx = mouseX - data.cx;
+                                const dy = mouseY - data.cy;
+                                const distance = Math.sqrt(dx * dx + dy * dy);
+                                if (distance < ICON_HOVER_RADIUS) {
+                                    const ratio = 1 - (distance / ICON_HOVER_RADIUS);
+                                    data.targetScale = 1 + (Math.sin(ratio * Math.PI / 2) * ICON_MAX_SCALE_BOOST);
+                                } else {
+                                    data.targetScale = 1;
+                                }
+                            }
+                        }
+                        
+                        const scaleDiff = Math.abs(data.currentScale - data.targetScale);
+                        const leftDiff = Math.abs(data.currentLeft - data.targetLeft);
+                        const topDiff = Math.abs(data.currentTop - data.targetTop);
+                        const rotationDiff = Math.abs(shortestAngleDiff(data.currentRotation, data.targetRotation));
+
+                        if (scaleDiff > 0.001 || leftDiff > 0.01 || topDiff > 0.01 || rotationDiff > 0.01) {
+                            data.currentScale = settleMotion(data.currentScale, data.targetScale, ICON_SCALE_SETTLE_RATE, 0.001);
+                            data.currentLeft = settleMotion(data.currentLeft, data.targetLeft, ICON_POSITION_SETTLE_RATE, 0.01);
+                            data.currentTop = settleMotion(data.currentTop, data.targetTop, ICON_POSITION_SETTLE_RATE, 0.01);
+                            data.currentRotation = settleAngleMotion(data.currentRotation, data.targetRotation, ICON_SCALE_SETTLE_RATE, 0.01);
+
+                            data.element.style.left = `${data.currentLeft.toFixed(3)}%`;
+                            data.element.style.top = `${data.currentTop.toFixed(3)}%`;
+                            data.element.style.transform = `translate3d(-50%, -50%, 0) rotate(${data.currentRotation.toFixed(3)}deg) scale(${data.currentScale.toFixed(4)})`;
+
+                            const newZIndex = data.currentScale > 1.05 ? 30 : 20;
+                            if (data.element.style.zIndex != newZIndex) {
+                                data.element.style.zIndex = newZIndex;
+                            }
+                        }
+                    });
+                    updatePreferenceFloat();
+                    requestAnimationFrame(animateIcons);
+                }
+                animateIcons();
+            }
+
+            let cameraStreamActive = false;
+            let fabricCanvas = null;
+            const video = byId('video');
+            const cameraWidget = byId('camera-widget');
+            const videoContainer = byId('video-container');
+            const tempCanvas = byId('temp-canvas');
+
+            function createSingleButterfly() {
+                const wrapper = document.createElement('div');
+                wrapper.classList.add('butterfly-wrapper');
+                const bobber = document.createElement('div');
+                bobber.classList.add('butterfly-bob');
+                const image = document.createElement('div');
+                image.classList.add('butterfly-image');
+                bobber.appendChild(image);
+                wrapper.appendChild(bobber);
+                document.body.appendChild(wrapper);
+
+                wrapper.addEventListener('click', async (e) => {
+                    e.stopPropagation();
+
+                    if (isDetailOpen) return;
+
+                    if (!navigator.mediaDevices?.getUserMedia) {
+                        alert('이 브라우저에서는 카메라 기능을 사용할 수 없습니다.');
+                        return;
+                    }
+
+                    if (!cameraStreamActive) {
+                        try {
+                            const stream = await navigator.mediaDevices.getUserMedia({
+                                video: {
+                                    width: { ideal: 1280 },
+                                    height: { ideal: 720 }
+                                },
+                                audio: false
+                            });
+                            video.srcObject = stream;
+                            cameraStreamActive = true;
+                        } catch (err) {
+                            alert('카메라 접근 권한이 필요합니다.');
+                            return;
+                        }
+                    }
+                    cameraWidget.style.display = 'block';
+                    setTimeout(() => cameraWidget.className = 'mini', 10);
+                });
+
+                let bX = window.innerWidth / 2;
+                let bY = window.innerHeight / 2;
+                let bRot = 45;
+                let velocityX = 0.35;
+                let velocityY = -0.2;
+                let targetX = bX;
+                let targetY = bY;
+                let lastFlutterTurn = 0;
+
+                function chooseButterflyTarget() {
+                    const margin = 70;
+                    targetX = Math.random() * (window.innerWidth - margin * 2) + margin;
+                    targetY = Math.random() * (window.innerHeight - margin * 2) + margin;
+                }
+
+                function angleDifference(target, current) {
+                    let diff = target - (current % 360);
+                    if (diff > 180) diff -= 360;
+                    if (diff < -180) diff += 360;
+                    return diff;
+                }
+
+                function animateButterfly(time = 0) {
+                    if (time - lastFlutterTurn > 2600 || Math.hypot(targetX - bX, targetY - bY) < 110) {
+                        chooseButterflyTarget();
+                        lastFlutterTurn = time;
+                    }
+
+                    const dx = targetX - bX;
+                    const dy = targetY - bY;
+                    const distance = Math.max(1, Math.hypot(dx, dy));
+                    const drift = 0.014;
+                    const lift = Math.sin(time / 520) * 0.035;
+
+                    velocityX += (dx / distance) * drift + Math.cos(time / 900) * 0.01;
+                    velocityY += (dy / distance) * drift + lift;
+
+                    const speed = Math.hypot(velocityX, velocityY);
+                    const maxSpeed = 1.55;
+                    if (speed > maxSpeed) {
+                        velocityX = (velocityX / speed) * maxSpeed;
+                        velocityY = (velocityY / speed) * maxSpeed;
+                    }
+
+                    bX += velocityX;
+                    bY += velocityY;
+
+                    const margin = 42;
+                    if (bX < margin || bX > window.innerWidth - margin) {
+                        velocityX *= -0.75;
+                        bX = Math.max(margin, Math.min(window.innerWidth - margin, bX));
+                        chooseButterflyTarget();
+                    }
+                    if (bY < margin || bY > window.innerHeight - margin) {
+                        velocityY *= -0.75;
+                        bY = Math.max(margin, Math.min(window.innerHeight - margin, bY));
+                        chooseButterflyTarget();
+                    }
+
+                    const targetRotation = Math.atan2(velocityY, velocityX) * (180 / Math.PI) + 90;
+                    bRot += angleDifference(targetRotation, bRot) * 0.08;
+                    const sway = Math.sin(time / 230) * 5;
+
+                    wrapper.style.transform = `translate3d(${bX.toFixed(2)}px, ${bY.toFixed(2)}px, 0) rotate(${(bRot + sway).toFixed(2)}deg)`;
+                    requestAnimationFrame(animateButterfly);
+                }
+
+                chooseButterflyTarget();
+                requestAnimationFrame(animateButterfly);
+            }
+            createSingleButterfly();
+
+            videoContainer.addEventListener('click', (e) => {
+                if (cameraWidget.classList.contains('mini')) {
+                    e.stopPropagation();
+
+                    if (typeof fabric === 'undefined') {
+                        alert('스티커 편집 기능을 불러오지 못했습니다. 인터넷 연결을 확인해주세요.');
+                        return;
+                    }
+
+                    cameraWidget.className = 'fullscreen';
+                    isPhotoBoothOpen = true;
+
+                    setTimeout(() => {
+                        const ratio = video.videoHeight && video.videoWidth ? video.videoHeight / video.videoWidth : 9 / 16;
+                        const displayWidth = Math.min(CAMERA_MAX_WIDTH, window.innerWidth - CAMERA_SIDE_GAP);
+                        const displayHeight = displayWidth * ratio;
+
+                        videoContainer.style.height = displayHeight + 'px';
+
+                        if (!fabricCanvas) {
+                            fabricCanvas = new fabric.Canvas('overlay-canvas');
+                        }
+                        fabricCanvas.setWidth(displayWidth);
+                        fabricCanvas.setHeight(displayHeight);
+                    }, CAMERA_LAYOUT_DELAY_MS);
+                }
+            });
+
+            byId('btn-close-camera').addEventListener('click', (e) => {
+                e.stopPropagation();
+                cameraWidget.style.display = 'none';
+                cameraWidget.className = '';
+                isPhotoBoothOpen = false;
+
+                videoContainer.style.height = '100%';
+
+                if (video.srcObject) {
+                    video.srcObject.getTracks().forEach(track => track.stop());
+                    video.srcObject = null;
+                }
+                cameraStreamActive = false;
+                if (fabricCanvas) fabricCanvas.clear();
+            });
+
+            window.addSticker = function(imgId) {
+                if (!fabricCanvas) return;
+                const imgElement = byId(imgId);
+                if (!imgElement) return;
+
+                const imgInstance = new fabric.Image(imgElement, {
+                    left: fabricCanvas.width / 2,
+                    top: fabricCanvas.height / 2,
+                    originX: 'center',
+                    originY: 'center',
+                    scaleX: 0.25,
+                    scaleY: 0.25,
+                    transparentCorners: false,
+                    cornerColor: '#111',
+                    cornerStrokeColor: '#fff',
+                    borderColor: '#111',
+                    cornerSize: 12,
+                    padding: 10,
+                    cornerStyle: 'circle'
+                });
+                fabricCanvas.add(imgInstance);
+                fabricCanvas.setActiveObject(imgInstance);
+            };
+
+            function removeActiveSticker({ showEmptyMessage = false } = {}) {
+                if (!fabricCanvas) return;
+                const activeObject = fabricCanvas.getActiveObject();
+                if (activeObject) {
+                    fabricCanvas.remove(activeObject);
+                } else if (showEmptyMessage) {
+                    alert('삭제할 스티커를 먼저 클릭해서 선택해주세요.');
+                }
+            }
+
+            function showCaptureFlash() {
+                const flash = document.createElement('div');
+                flash.style.position = 'fixed';
+                flash.style.inset = '0';
+                flash.style.backgroundColor = 'white';
+                flash.style.zIndex = '9999';
+                flash.style.pointerEvents = 'none';
+                document.body.appendChild(flash);
+
+                setTimeout(() => {
+                    flash.style.transition = 'opacity 0.4s ease-out';
+                    flash.style.opacity = '0';
+                    setTimeout(() => flash.remove(), 400);
+                }, 50);
+            }
+
+            function downloadImage(dataUrl, filename) {
+                const link = document.createElement('a');
+                link.download = filename;
+                link.href = dataUrl;
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
+            }
+
+            byId('delete-btn').addEventListener('click', function() {
+                removeActiveSticker({ showEmptyMessage: true });
+            });
+
+            window.addEventListener('keydown', function(e) {
+                if (e.key === 'Delete' || e.key === 'Backspace') {
+                    removeActiveSticker();
+                }
+            });
+
+            byId('capture-btn').addEventListener('click', function() {
+                if (!fabricCanvas) return;
+                fabricCanvas.discardActiveObject();
+                fabricCanvas.renderAll();
+                showCaptureFlash();
+
+                try {
+                    const ctx = tempCanvas.getContext('2d');
+                    tempCanvas.width = fabricCanvas.width;
+                    tempCanvas.height = fabricCanvas.height;
+                    ctx.save();
+                    ctx.translate(tempCanvas.width, 0);
+                    ctx.scale(-1, 1);
+                    ctx.drawImage(video, 0, 0, tempCanvas.width, tempCanvas.height);
+                    ctx.restore();
+
+                    const fabricEl = fabricCanvas.lowerCanvasEl || fabricCanvas.getElement();
+                    ctx.drawImage(fabricEl, 0, 0, tempCanvas.width, tempCanvas.height);
+                    downloadImage(tempCanvas.toDataURL('image/png'), 'YerinB_Photo.png');
+                } catch (e) {
+                    console.error('저장 에러:', e);
+                    alert('사진을 저장할 수 없습니다. 브라우저 보안 정책 때문에 차단될 수 있으니 localhost 또는 GitHub Pages에서 열어주세요.');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
