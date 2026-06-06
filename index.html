@@ -953,8 +953,8 @@
         const YEAR_1982_LEFT_OFFSET = -1;
         const YEAR_2017_LEFT_OFFSET = 0;
         const YEAR_2017_ROW_GAP = 3.7;
-        const YEAR_2019_LEFT_OFFSET = 3.2;
-        const YEAR_2019_COLUMN_GAP = 2.4;
+        const YEAR_2019_LEFT_OFFSET = 2.2;
+        const YEAR_2019_COLUMN_GAP = 1.4;
         const YEAR_2019_ROW_GAP = 3.7;
         const YEAR_2020_LEFT_OFFSET = 4.5;
         const YEAR_2020_ROW_GAP = 3.7;
@@ -2347,8 +2347,8 @@
                 const baseLeft = getYearColumnCenterLeft(2019);
                 const rowIndex = Math.floor(orderedIndex / 2);
                 const columnOffset = orderedIndex % 2 === 0
-                    ? -YEAR_2019_COLUMN_GAP / 2
-                    : YEAR_2019_COLUMN_GAP / 2;
+                    ? -YEAR_2019_COLUMN_GAP / 1
+                    : YEAR_2019_COLUMN_GAP / 1;
 
                 return {
                     ...layoutItem,
