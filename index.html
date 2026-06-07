@@ -314,6 +314,32 @@
             display: block;
         }
 
+        .feature-area-labels {
+            position: fixed;
+            inset: 0;
+            z-index: 35;
+            opacity: 0;
+            pointer-events: none;
+            user-select: none;
+            transition: opacity 0.2s ease;
+        }
+
+        .feature-area-labels.show {
+            opacity: 1;
+        }
+
+        .feature-area-label {
+            position: absolute;
+            font-family: 'Pretendard', 'Helvetica', sans-serif;
+            font-weight: 500;
+            font-size: 7.84pt;
+            line-height: 1;
+            letter-spacing: 0;
+            color: #000000;
+            white-space: nowrap;
+            transform: translate(-50%, 0);
+        }
+
         .album-center-indicator {
             position: fixed;
             left: 50%;
@@ -889,6 +915,76 @@
         body * {
             cursor: url('cursor-wing.png') 12 7, auto !important;
         }
+
+        /* -------------------------------------------
+           Album Scroll Info CSS
+           ------------------------------------------- */
+        .album-scroll-info {
+            position: fixed;
+            bottom: 40px;
+            left: 40px;
+            z-index: 1000;
+            font-family: 'Pretendard', 'Helvetica', sans-serif;
+            color: #000000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            pointer-events: none;
+            user-select: none;
+        }
+
+        .album-scroll-info.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .album-scroll-title {
+            font-size: 42px;
+            font-weight: 800; /* Extra Bold */
+            letter-spacing: -0.02em;
+            line-height: 1.1;
+        }
+
+        .album-scroll-details {
+            font-size: 24px;
+            font-weight: 500;
+            line-height: 1.5;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        /* -------------------------------------------
+           Feature Scroll Label CSS
+           ------------------------------------------- */
+        .feature-scroll-label {
+            position: fixed;
+            left: 50%;
+            bottom: 8%; /* 하단 여백 */
+            transform: translateX(-50%);
+            z-index: 1000;
+            font-family: 'Pretendard', 'Helvetica', sans-serif;
+            font-weight: 500;
+            font-size: 11.2pt;
+            line-height: 1;
+            letter-spacing: 0;
+            color: #000000;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+            pointer-events: none;
+            user-select: none;
+        }
+
+        .feature-scroll-label.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
     </style>
 </head>
 <body>
@@ -945,8 +1041,16 @@
             <div class="album-center-triangle"></div>
         </div>
         <div class="genre-row-labels" id="genre-row-labels" aria-hidden="true"></div>
+        <div class="feature-area-labels" id="feature-area-labels" aria-hidden="true"></div>
         <div class="icon-scatter-container" id="iconContainer"></div>
     </main>
+
+    <div id="album-scroll-info" class="album-scroll-info" aria-hidden="true">
+        <div class="album-scroll-title" id="album-scroll-title"></div>
+        <div class="album-scroll-details" id="album-scroll-details"></div>
+    </div>
+    
+    <div id="feature-scroll-label" class="feature-scroll-label" aria-hidden="true"></div>
 
     <div id="camera-widget">
         <button id="btn-close-camera" class="fullscreen-only" type="button" title="카메라 끄기" aria-label="카메라 끄기">X</button>
@@ -1036,9 +1140,11 @@
         const GENRE_ICON_SCALE = 0.7;
         const GENRE_ROW_LABEL_NAMES = ['Indie', 'Rock', 'Hiphop', 'R&B', 'ballad'];
         const GENRE_ROW_LABEL_GAP = 4.8;
+        const GENRE_LEFT_OFFSET = 5.74;
         const FEATURE_ICON_SCALE = 0.49;
         const FEATURE_HORIZONTAL_SPREAD = 1.12;
         const FEATURE_VERTICAL_SPREAD = 0.5;
+        const FEATURE_LABEL_BOTTOM_GAP = 2.1;
         const DETAIL_FADE_MS = 300;
         const LOADING_DURATION_MS = 3000;
         const POPUP_FOLD_MS = 500;
@@ -1055,11 +1161,11 @@
         const FEATURE_ZOOM_TARGET_TOP = 52;
         const FEATURE_ZOOM_GROUPS = [
             { name: 'OST', stickers: ['26', '35', '44'] },
-            { name: '피처링', stickers: ['19', '21', '23', '40'] },
-            { name: '리메이크', stickers: ['09', '22', '27', '28', '39', '48'] },
-            { name: '커버', stickers: ['11', '12', '15', '36', '43', '46', '47', '52', '54', '55', '56'] },
-            { name: '기타', stickers: ['01', '02', '03', '04', '05', '06', '08', '10', '13', '14', '17', '18', '20', '24', '25', '29', '30', '31', '32', '33', '34', '37', '38', '41', '49', '50', '53', '57', '58', '60'] },
-            { name: '밴드', stickers: ['07', '16', '42', '45', '51', '59'] }
+            { name: 'Featuring', stickers: ['19', '21', '23', '40'] },
+            { name: 'Remake', stickers: ['09', '22', '27', '28', '39', '48'] },
+            { name: 'Cover', stickers: ['11', '12', '15', '36', '43', '46', '47', '52', '54', '55', '56'] },
+            { name: 'Solo', stickers: ['01', '02', '03', '04', '05', '06', '08', '10', '13', '14', '17', '18', '20', '24', '25', '29', '30', '31', '32', '33', '34', '37', '38', '41', '49', '50', '53', '57', '58', '60'] },
+            { name: 'Band', stickers: ['07', '16', '42', '45', '51', '59'] }
         ];
         const FEATURE_ZOOM_STEP_PROGRESS_IN_SECTION = 0.82;
         const FEATURE_ZOOM_WHEEL_COOLDOWN_MS = 120;
@@ -1094,325 +1200,110 @@
         const CAMERA_MAX_WIDTH = 800;
         const CAMERA_SIDE_GAP = 28;
         const CAMERA_LAYOUT_DELAY_MS = 400;
+
+        const albumScrollData = {
+            'Love you on Christmas': { tracks: 1, genres: 1, releaseDate: '2016.12.07' },
+            'I MET PEEJAY': { tracks: 1, genres: 1, releaseDate: '2025.05.07' },
+            'Archive 01': { tracks: 1, genres: 1, releaseDate: '2023.03.08' },
+            'Bye bye my blue': { tracks: 3, genres: 2, releaseDate: '2016.06.20' },
+            'Our love is great': { tracks: 6, genres: 2, releaseDate: '2019.03.18' },
+            'Every letter I sent you.': { tracks: 9, genres: 4, releaseDate: '2019.12.10' },
+            'Nerdy Love': { tracks: 1, genres: 1, releaseDate: '2020.01.09' },
+            'Limbo': { tracks: 1, genres: 1, releaseDate: '2017.02.17' },
+            '물고기': { tracks: 3, genres: 2, releaseDate: '2022.05.24' },
+            '커버': { tracks: 11, genres: 4, releaseDate: '1996.05.13' },
+            '선물': { tracks: 6, genres: 2, releaseDate: '2021.09.10' },
+            'tellusboutyourself': { tracks: 5, genres: 3, releaseDate: '2020.12.10' },
+            'FRANK': { tracks: 2, genres: 1, releaseDate: '2015.11.30' },
+            'The Volunteers': { tracks: 6, genres: 1, releaseDate: '2021.05.27' },
+            '사랑의 불시착': { tracks: 1, genres: 1, releaseDate: '2020.01.12' },
+            '시카고 타자기': { tracks: 1, genres: 1, releaseDate: '2017.04.15' },
+            '낙서': { tracks: 1, genres: 1, releaseDate: '2019.11.11' },
+            'A-TEEN': { tracks: 1, genres: 1, releaseDate: '2019.05.09' }
+        };
+
         const stickerAssetVersion = '1779921709408';
         const stickerVisualScaleBySticker = {
-            '01': 1.010,
-            '02': 1.044,
-            '03': 0.998,
-            '04': 1.042,
-            '05': 0.983,
-            '06': 0.996,
-            '07': 1.011,
-            '08': 1.021,
-            '09': 0.989,
-            '10': 1.073,
-            '11': 1.000,
-            '12': 1.010,
-            '13': 0.991,
-            '14': 1.002,
-            '15': 0.987,
-            '16': 0.983,
-            '17': 1.006,
-            '18': 1.011,
-            '19': 1.017,
-            '20': 1.019,
-            '21': 0.996,
-            '22': 1.044,
-            '23': 0.998,
-            '24': 0.995,
-            '25': 1.029,
-            '26': 1.012,
-            '27': 0.994,
-            '28': 1.010,
-            '29': 1.001,
-            '30': 1.001,
-            '31': 0.997,
-            '32': 1.015,
-            '33': 0.985,
-            '34': 0.976,
-            '35': 0.995,
-            '36': 0.986,
-            '37': 1.021,
-            '38': 1.007,
-            '39': 0.999,
-            '40': 1.031,
-            '41': 1.003,
-            '42': 0.990,
-            '43': 1.009,
-            '44': 0.997,
-            '45': 0.975,
-            '46': 0.983,
-            '47': 1.000,
-            '48': 0.993,
-            '49': 0.997,
-            '50': 1.057,
-            '51': 1.000,
-            '52': 0.987,
-            '53': 0.988,
-            '54': 0.982,
-            '55': 1.010,
-            '56': 1.145,
-            '57': 1.078,
-            '58': 0.988,
-            '59': 1.001,
-            '60': 0.990
+            '01': 1.010, '02': 1.044, '03': 0.998, '04': 1.042, '05': 0.983,
+            '06': 0.996, '07': 1.011, '08': 1.021, '09': 0.989, '10': 1.073,
+            '11': 1.000, '12': 1.010, '13': 0.991, '14': 1.002, '15': 0.987,
+            '16': 0.983, '17': 1.006, '18': 1.011, '19': 1.017, '20': 1.019,
+            '21': 0.996, '22': 1.044, '23': 0.998, '24': 0.995, '25': 1.029,
+            '26': 1.012, '27': 0.994, '28': 1.010, '29': 1.001, '30': 1.001,
+            '31': 0.997, '32': 1.015, '33': 0.985, '34': 0.976, '35': 0.995,
+            '36': 0.986, '37': 1.021, '38': 1.007, '39': 0.999, '40': 1.031,
+            '41': 1.003, '42': 0.990, '43': 1.009, '44': 0.997, '45': 0.975,
+            '46': 0.983, '47': 1.000, '48': 0.993, '49': 0.997, '50': 1.057,
+            '51': 1.000, '52': 0.987, '53': 0.988, '54': 0.982, '55': 1.010,
+            '56': 1.145, '57': 1.078, '58': 0.988, '59': 1.001, '60': 0.990
         };
         const bgMusicExtensionBySticker = {
-            '10': 'm4a',
-            '55': 'm4a',
-            '56': 'm4a'
+            '10': 'm4a', '55': 'm4a', '56': 'm4a'
         };
 
         const songSearchTermsBySticker = {
-            '01': ["November song"],
-            '02': ["Dear my blue"],
-            '03': ["0310"],
-            '04': ["그게 나였네"],
-            '05': ["1-4-3"],
-            '06': ["그의 바다"],
-            '07': ["Pinktop"],
-            '08': ["Zero"],
-            '09': ["왜? 날"],
-            '10': ["Our love is great"],
-            '11': ["가끔"],
-            '12': ["그런 일은"],
-            '13': ["Datoom"],
-            '14': ["Lovelovelove"],
-            '15': ["Always in love"],
-            '16': ["Sad"],
-            '17': ["True lover"],
-            '18': ["Bunny"],
-            '19': ["넘어와"],
-            '20': ["Rest"],
-            '21': ["Nerdy love"],
-            '22': ["그럴때마다"],
-            '23': ["55"],
-            '24': ["Popo"],
-            '25': ["우주를 건너"],
-            '26': ["다시 난, 여기"],
-            '27': ["산책"],
-            '28': ["돌아가자"],
-            '29': ["I’m in love"],
-            '30': ["그건 아마 우리의 잘못은 아닐거야"],
-            '31': ["Square"],
-            '32': ["London"],
-            '33': ["내가 날 모르는 것처럼"],
-            '34': ["Bye bye my blue"],
-            '35': ["아주 오래된 기억"],
-            '36': ["La La La love song"],
-            '37': ["0415"],
-            '38': ["Loveless"],
-            '39': ["Antifreeze"],
-            '40': ["낙서"],
-            '41': ["Hate you"],
-            '42': ["Material girl"],
-            '43': ["Love on top"],
-            '44': ["스며들기 좋은 오늘"],
-            '45': ["Let me go!"],
-            '46': ["Champagne Supernova"],
-            '47': ["strange"],
-            '48': ["한계"],
-            '49': ["야간비행"],
-            '50': ["막내"],
-            '51': ["Summer"],
-            '52': ["Reality"],
-            '53': ["물고기"],
-            '54': ["장마"],
-            '55': ["나였으면"],
-            '56': ["나비효과"],
-            '57': ["혼자두지마"],
-            '58': ["지켜줄게"],
-            '59': ["Violet"],
-            '60': ["I am not your ocean anymore"]
+            '01': ["November song"], '02': ["Dear my blue"], '03': ["0310"],
+            '04': ["그게 나였네"], '05': ["1-4-3"], '06': ["그의 바다"],
+            '07': ["Pinktop"], '08': ["Zero"], '09': ["왜? 날"],
+            '10': ["Our love is great"], '11': ["가끔"], '12': ["그런 일은"],
+            '13': ["Datoom"], '14': ["Lovelovelove"], '15': ["Always in love"],
+            '16': ["Sad"], '17': ["True lover"], '18': ["Bunny"],
+            '19': ["넘어와"], '20': ["Rest"], '21': ["Nerdy love"],
+            '22': ["그럴때마다"], '23': ["55"], '24': ["Popo"],
+            '25': ["우주를 건너"], '26': ["다시 난, 여기"], '27': ["산책"],
+            '28': ["돌아가자"], '29': ["I’m in love"], '30': ["그건 아마 우리의 잘못은 아닐거야"],
+            '31': ["Square"], '32': ["London"], '33': ["내가 날 모르는 것처럼"],
+            '34': ["Bye bye my blue"], '35': ["아주 오래된 기억"], '36': ["La La La love song"],
+            '37': ["0415"], '38': ["Loveless"], '39': ["Antifreeze"],
+            '40': ["낙서"], '41': ["Hate you"], '42': ["Material girl"],
+            '43': ["Love on top"], '44': ["스며들기 좋은 오늘"], '45': ["Let me go!"],
+            '46': ["Champagne Supernova"], '47': ["strange"], '48': ["한계"],
+            '49': ["야간비행"], '50': ["막내"], '51': ["Summer"],
+            '52': ["Reality"], '53': ["물고기"], '54': ["장마"],
+            '55': ["나였으면"], '56': ["나비효과"], '57': ["혼자두지마"],
+            '58': ["지켜줄게"], '59': ["Violet"], '60': ["I am not your ocean anymore"]
         };
 
         const preferenceScoreBySticker = {
-            '01': 4,
-            '02': 4,
-            '03': 6,
-            '04': 4,
-            '05': 3,
-            '06': 6,
-            '07': 4,
-            '08': 4,
-            '09': 3,
-            '10': 6,
-            '11': 7,
-            '12': 7,
-            '13': 7,
-            '14': 4,
-            '15': 5,
-            '16': 5,
-            '17': 3,
-            '18': 3,
-            '19': 2,
-            '20': 5,
-            '21': 5,
-            '22': 4,
-            '23': 3,
-            '24': 5,
-            '25': 4,
-            '26': 3,
-            '27': 4,
-            '28': 3,
-            '29': 3,
-            '30': 9,
-            '31': 8,
-            '32': 6,
-            '33': 5,
-            '34': 5,
-            '35': 3,
-            '36': 3,
-            '37': 3,
-            '38': 3,
-            '39': 4,
-            '40': 2,
-            '41': 3,
-            '42': 5,
-            '43': 3,
-            '44': 7,
-            '45': 5,
-            '46': 3,
-            '47': 5,
-            '48': 6,
-            '49': 7,
-            '50': 4,
-            '51': 8,
-            '52': 6,
-            '53': 6,
-            '54': 6,
-            '55': 7,
-            '56': 7,
-            '57': 5,
-            '58': 3,
-            '59': 4,
-            '60': 7
+            '01': 4, '02': 4, '03': 6, '04': 4, '05': 3, '06': 6, '07': 4,
+            '08': 4, '09': 3, '10': 6, '11': 7, '12': 7, '13': 7, '14': 4,
+            '15': 5, '16': 5, '17': 3, '18': 3, '19': 2, '20': 5, '21': 5,
+            '22': 4, '23': 3, '24': 5, '25': 4, '26': 3, '27': 4, '28': 3,
+            '29': 3, '30': 9, '31': 8, '32': 6, '33': 5, '34': 5, '35': 3,
+            '36': 3, '37': 3, '38': 3, '39': 4, '40': 2, '41': 3, '42': 5,
+            '43': 3, '44': 7, '45': 5, '46': 3, '47': 5, '48': 6, '49': 7,
+            '50': 4, '51': 8, '52': 6, '53': 6, '54': 6, '55': 7, '56': 7,
+            '57': 5, '58': 3, '59': 4, '60': 7
         };
 
         const stickerVisibleTopRatioBySticker = {
-            '01': 0.01233,
-            '02': 0.22437,
-            '03': 0.08698,
-            '04': 0.07185,
-            '05': 0.13782,
-            '06': 0.01953,
-            '07': 0.01226,
-            '08': 0.03382,
-            '09': 0.16834,
-            '10': 0.01051,
-            '11': 0.01297,
-            '12': 0.15181,
-            '13': 0.22596,
-            '14': 0.30112,
-            '15': 0.18387,
-            '16': 0.00819,
-            '17': 0.00744,
-            '18': 0.00355,
-            '19': 0.18478,
-            '20': 0.01061,
-            '21': 0.12071,
-            '22': 0.01368,
-            '23': 0.11608,
-            '24': 0.07024,
-            '25': 0.2081,
-            '26': 0.0206,
-            '27': 0.02013,
-            '28': 0.04743,
-            '29': 0.07392,
-            '30': 0.00248,
-            '31': 0.0845,
-            '32': 0.01099,
-            '33': 0.13176,
-            '34': 0.00257,
-            '35': 0.00517,
-            '36': 0.0,
-            '37': 0.14573,
-            '38': 0.01774,
-            '39': 0.00402,
-            '40': 0.01689,
-            '41': 0.01426,
-            '42': 0.0,
-            '43': 0.01381,
-            '44': 0.00762,
-            '45': 0.00247,
-            '46': 0.00437,
-            '47': 0.00643,
-            '48': 0.05172,
-            '49': 0.01157,
-            '50': 0.17389,
-            '51': 0.0,
-            '52': 0.16623,
-            '53': 0.22777,
-            '54': 0.0721,
-            '55': 0.18717,
-            '56': 0.23239,
-            '57': 0.00295,
-            '58': 0.10444,
-            '59': 0.00279,
-            '60': 0.13003
+            '01': 0.01233, '02': 0.22437, '03': 0.08698, '04': 0.07185, '05': 0.13782,
+            '06': 0.01953, '07': 0.01226, '08': 0.03382, '09': 0.16834, '10': 0.01051,
+            '11': 0.01297, '12': 0.15181, '13': 0.22596, '14': 0.30112, '15': 0.18387,
+            '16': 0.00819, '17': 0.00744, '18': 0.00355, '19': 0.18478, '20': 0.01061,
+            '21': 0.12071, '22': 0.01368, '23': 0.11608, '24': 0.07024, '25': 0.2081,
+            '26': 0.0206, '27': 0.02013, '28': 0.04743, '29': 0.07392, '30': 0.00248,
+            '31': 0.0845, '32': 0.01099, '33': 0.13176, '34': 0.00257, '35': 0.00517,
+            '36': 0.0, '37': 0.14573, '38': 0.01774, '39': 0.00402, '40': 0.01689,
+            '41': 0.01426, '42': 0.0, '43': 0.01381, '44': 0.00762, '45': 0.00247,
+            '46': 0.00437, '47': 0.00643, '48': 0.05172, '49': 0.01157, '50': 0.17389,
+            '51': 0.0, '52': 0.16623, '53': 0.22777, '54': 0.0721, '55': 0.18717,
+            '56': 0.23239, '57': 0.00295, '58': 0.10444, '59': 0.00279, '60': 0.13003
         };
 
         const detailScaleBySticker = {
-            '01': 0.8548,
-            '02': 0.7066,
-            '03': 0.8618,
-            '04': 0.8072,
-            '05': 0.7056,
-            '06': 0.827,
-            '07': 0.806,
-            '08': 0.8102,
-            '09': 0.6703,
-            '10': 0.9236,
-            '11': 0.9646,
-            '12': 0.7886,
-            '13': 0.6167,
-            '14': 0.7215,
-            '15': 0.6484,
-            '16': 0.7982,
-            '17': 0.9001,
-            '18': 0.9856,
-            '19': 0.6533,
-            '20': 0.9637,
-            '21': 0.7012,
-            '22': 0.8651,
-            '23': 0.7404,
-            '24': 0.7633,
-            '25': 0.6334,
-            '26': 1.0243,
-            '27': 0.8877,
-            '28': 0.762,
-            '29': 0.7562,
-            '30': 1.0,
-            '31': 0.7434,
-            '32': 1.0035,
-            '33': 0.7128,
-            '34': 0.985,
-            '35': 1.0356,
-            '36': 1.0388,
-            '37': 0.6897,
-            '38': 0.8178,
-            '39': 0.8421,
-            '40': 0.8378,
-            '41': 0.8175,
-            '42': 1.3813,
-            '43': 0.9606,
-            '44': 0.9717,
-            '45': 1.1138,
-            '46': 0.8137,
-            '47': 0.8423,
-            '48': 0.7746,
-            '49': 0.8356,
-            '50': 0.6806,
-            '51': 0.867,
-            '52': 0.672,
-            '53': 0.6186,
-            '54': 0.773,
-            '55': 0.6469,
-            '56': 0.6178,
-            '57': 0.9084,
-            '58': 0.7206,
-            '59': 0.8784,
-            '60': 0.7128
+            '01': 0.8548, '02': 0.7066, '03': 0.8618, '04': 0.8072, '05': 0.7056,
+            '06': 0.827, '07': 0.806, '08': 0.8102, '09': 0.6703, '10': 0.9236,
+            '11': 0.9646, '12': 0.7886, '13': 0.6167, '14': 0.7215, '15': 0.6484,
+            '16': 0.7982, '17': 0.9001, '18': 0.9856, '19': 0.6533, '20': 0.9637,
+            '21': 0.7012, '22': 0.8651, '23': 0.7404, '24': 0.7633, '25': 0.6334,
+            '26': 1.0243, '27': 0.8877, '28': 0.762, '29': 0.7562, '30': 1.0,
+            '31': 0.7434, '32': 1.0035, '33': 0.7128, '34': 0.985, '35': 1.0356,
+            '36': 1.0388, '37': 0.6897, '38': 0.8178, '39': 0.8421, '40': 0.8378,
+            '41': 0.8175, '42': 1.3813, '43': 0.9606, '44': 0.9717, '45': 1.1138,
+            '46': 0.8137, '47': 0.8423, '48': 0.7746, '49': 0.8356, '50': 0.6806,
+            '51': 0.867, '52': 0.672, '53': 0.6186, '54': 0.773, '55': 0.6469,
+            '56': 0.6178, '57': 0.9084, '58': 0.7206, '59': 0.8784, '60': 0.7128
         };
 
 
@@ -1493,6 +1384,12 @@
             const detailImageBack = byId('detail-image-back');
             const bgMusic = byId('bgMusic');
 
+            const albumScrollInfo = byId('album-scroll-info');
+            const albumScrollTitle = byId('album-scroll-title');
+            const albumScrollDetails = byId('album-scroll-details');
+            const featureScrollLabel = byId('feature-scroll-label');
+            let currentAlbumScrollKey = null;
+
             function stickerUrl(numStr) {
                 return `sticker${numStr}.png?v=${stickerAssetVersion}`;
             }
@@ -1536,10 +1433,11 @@
                 detailContainer.style.opacity = opacity;
             }
 
-            function openDetailView(numStr) {
+            function openDetailView(numStr, { showBack = false } = {}) {
                 isDetailOpen = true;
                 detailImageFront.src = stickerUrl(numStr);
                 detailImageBack.src = backUrl(numStr);
+                detailContainer.classList.toggle('is-flipped', showBack);
                 detailContainer.style.setProperty('--detail-scale', detailScaleBySticker[numStr] || 1);
                 playBgMusic(numStr);
 
@@ -2544,6 +2442,7 @@
             const albumCenterIndicator = byId('album-center-indicator');
             const albumCenterName = byId('album-center-name');
             const genreRowLabels = byId('genre-row-labels');
+            const featureAreaLabels = byId('feature-area-labels');
             const scrollRowZoom = byId('scroll-row-zoom');
             const iconElementsData = [];
             let activeCategory = 'main';
@@ -2694,6 +2593,7 @@
                     const centerLeft = getYearLayoutCenter('left');
                     return centerLeft + (left - centerLeft) * YEAR_LAYOUT_HORIZONTAL_SCALE;
                 }
+                if (category === 'genre') return left + GENRE_LEFT_OFFSET;
                 if (category !== 'feature') return left;
                 return clamp(50 + (left - 50) * FEATURE_HORIZONTAL_SPREAD, 6, 94);
             }
@@ -2827,6 +2727,7 @@
             let albumCenterRevealTimer = null;
             let genreLabelRevealTimer = null;
             let genreZoomLabelRevealTimer = null;
+            let featureLabelRevealTimer = null;
             let albumCenterReady = false;
 
             function clearYearLabelRevealTimer() {
@@ -2861,6 +2762,13 @@
                 }
             }
 
+            function clearFeatureLabelRevealTimer() {
+                if (featureLabelRevealTimer) {
+                    clearTimeout(featureLabelRevealTimer);
+                    featureLabelRevealTimer = null;
+                }
+            }
+
             function hideAllYearLabels() {
                 iconElementsData.forEach(data => {
                     data.element.classList.remove('show-year-label');
@@ -2876,6 +2784,62 @@
                 genreRowLabels.classList.remove('show');
                 genreRowLabels.innerHTML = '';
                 genreRowLabels.dataset.mode = '';
+            }
+
+            function hideFeatureAreaLabels() {
+                if (!featureAreaLabels) return;
+                featureAreaLabels.classList.remove('show');
+                featureAreaLabels.innerHTML = '';
+                featureAreaLabels.dataset.ready = '';
+            }
+
+            function showFeatureAreaLabels() {
+                if (!featureAreaLabels || activeCategory !== 'feature' || window.scrollY > 1) return;
+
+                const viewportWidth = Math.max(window.innerWidth || 1, 1);
+                const viewportHeight = Math.max(window.innerHeight || 1, 1);
+                const dataBySticker = iconElementsData.reduce((map, data) => {
+                    if (data?.sticker) map.set(data.sticker, data);
+                    return map;
+                }, new Map());
+
+                featureAreaLabels.innerHTML = '';
+                FEATURE_ZOOM_GROUPS.forEach(group => {
+                    const items = group.stickers
+                        .map(sticker => dataBySticker.get(sticker))
+                        .filter(data => (
+                            data &&
+                            Number.isFinite(data.originLeft) &&
+                            Number.isFinite(data.originTop) &&
+                            Number.isFinite(data.baseSize)
+                        ));
+
+                    if (!items.length) return;
+
+                    const bounds = items.reduce((acc, data) => {
+                        const halfWidth = (data.baseSize / viewportWidth) * 50;
+                        const halfHeight = (data.baseSize / viewportHeight) * 50;
+                        return {
+                            minLeft: Math.min(acc.minLeft, data.originLeft - halfWidth),
+                            maxLeft: Math.max(acc.maxLeft, data.originLeft + halfWidth),
+                            maxTop: Math.max(acc.maxTop, data.originTop + halfHeight)
+                        };
+                    }, {
+                        minLeft: Infinity,
+                        maxLeft: -Infinity,
+                        maxTop: -Infinity
+                    });
+
+                    const label = document.createElement('div');
+                    label.className = 'feature-area-label';
+                    label.textContent = group.name;
+                    label.style.left = `${clamp((bounds.minLeft + bounds.maxLeft) / 2, 5, 95).toFixed(2)}%`;
+                    label.style.top = `${clamp(bounds.maxTop + FEATURE_LABEL_BOTTOM_GAP, 5, 95).toFixed(2)}%`;
+                    featureAreaLabels.appendChild(label);
+                });
+
+                featureAreaLabels.dataset.ready = 'true';
+                featureAreaLabels.classList.add('show');
             }
 
             function showGenreRowLabels() {
@@ -3020,6 +2984,7 @@
                 clearYearLabelRevealTimer();
                 clearAlbumCenterRevealTimer();
                 clearGenreLabelRevealTimer();
+                clearFeatureLabelRevealTimer();
                 albumCenterReady = false;
                 featureZoomStep = -1;
                 genreZoomStep = -1;
@@ -3029,6 +2994,7 @@
                 hideAllYearLabels();
                 hideAlbumCenterIndicator();
                 hideGenreRowLabels();
+                hideFeatureAreaLabels();
                 hideScrollRowZoom();
 
                 const albumCircleAnchors = category === 'album'
@@ -3138,6 +3104,13 @@
                         }
                         genreLabelRevealTimer = null;
                     }, GENRE_LABEL_REVEAL_DELAY_MS);
+                }
+
+                if (category === 'feature') {
+                    featureLabelRevealTimer = setTimeout(() => {
+                        showFeatureAreaLabels();
+                        featureLabelRevealTimer = null;
+                    }, YEAR_LABEL_REVEAL_DELAY_MS);
                 }
             }
 
@@ -3326,7 +3299,7 @@
 
                     iconWrapper.addEventListener('click', (e) => {
                         e.stopPropagation();
-                        if (!isDetailOpen) openDetailView(numStr);
+                        if (!isDetailOpen) openDetailView(numStr, { showBack: window.scrollY > 1 });
                     });
                 }
 
@@ -3807,37 +3780,6 @@
                 }
 
                 function getFeatureGroupFitScale(groupItems, focus) {
-                    if (!groupItems.length || !focus) return 1;
-
-                    const viewportWidth = Math.max(window.innerWidth || 1, 1);
-                    const viewportHeight = Math.max(window.innerHeight || 1, 1);
-                    const maxXOffset = Math.max(
-                        0.1,
-                        ...groupItems.map(data => {
-                            const halfWidthPercent = (getIconBasePixelSize(data) / viewportWidth) * 50;
-                            return Math.abs(data.originLeft - focus.left) + halfWidthPercent;
-                        })
-                    );
-                    const maxYOffset = Math.max(
-                        0.1,
-                        ...groupItems.map(data => {
-                            const halfHeightPercent = (getIconBasePixelSize(data) / viewportHeight) * 50;
-                            return Math.abs(data.originTop - focus.top) + halfHeightPercent;
-                        })
-                    );
-                    const fitX = Math.min(
-                        (FEATURE_ZOOM_TARGET_LEFT - FEATURE_ZOOM_VIEWPORT_MARGIN_X) / maxXOffset,
-                        (100 - FEATURE_ZOOM_VIEWPORT_MARGIN_X - FEATURE_ZOOM_TARGET_LEFT) / maxXOffset
-                    );
-                    const fitY = Math.min(
-                        (FEATURE_ZOOM_TARGET_TOP - FEATURE_ZOOM_VIEWPORT_MARGIN_Y) / maxYOffset,
-                        (100 - FEATURE_ZOOM_VIEWPORT_MARGIN_Y - FEATURE_ZOOM_TARGET_TOP) / maxYOffset
-                    );
-
-                    return clamp(Math.min(fitX, fitY, FEATURE_ZOOM_MAX_SCALE), 1, FEATURE_ZOOM_MAX_SCALE);
-                }
-
-                function getAlbumGroupFillScale(groupItems, focus) {
                     if (!groupItems.length || !focus) return 1;
 
                     const viewportWidth = Math.max(window.innerWidth || 1, 1);
